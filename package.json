@@ -1,0 +1,84 @@
+{
+  "name": "adonis-resque",
+  "version": "1.0.0",
+  "type": "module",
+  "description": " Resque Queue for AdonisJS v6 ",
+  "main": "build/index.js",
+  "files": [
+    "build"
+  ],
+  "exports": {
+    ".": "./build/index.js",
+    "./services/main": "./build/services/main.js",
+    "./providers/resque_provider": "./build/providers/resque_provider.js",
+    "./types": "./build/types.js"
+  },
+  "engines": {
+    "node": ">=18.16.0"
+  },
+  "scripts": {
+    "build": "npm run compile",
+    "dev": "tsup-node --watch",
+    "typecheck": "tsc --noEmit",
+    "copy:templates": "copyfiles --up 1 \"stubs/**/**/*.stub\" build",
+    "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
+    "postcompile": "npm run copy:templates",
+    "test": "node --loader ts-node/esm --enable-source-maps bin/test.ts"
+  },
+  "bugs": {
+    "url": "https://github.com/shiny/adonis-resque/issues"
+  },
+  "keywords": [
+    "adonisjs",
+    "adonis6",
+    "resque",
+    "node-resque"
+  ],
+  "author": "Chieh",
+  "license": "MIT",
+  "homepage": "https://github.com/shiny/adonis-resque",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shiny/adonis-resque.git"
+  },
+  "devDependencies": {
+    "@adonisjs/assembler": "^7.2.2",
+    "@adonisjs/core": "^6.3.1",
+    "@adonisjs/eslint-config": "^1.2.1",
+    "@adonisjs/prettier-config": "^1.2.1",
+    "@adonisjs/redis": "8.0.1",
+    "@adonisjs/tsconfig": "^1.2.1",
+    "@japa/expect": "3.0.1",
+    "@japa/expect-type": "2.0.1",
+    "@japa/runner": "3.1.1",
+    "@types/node": "^20.11.21",
+    "copyfiles": "^2.4.1",
+    "eslint": "^8.57.0",
+    "nock": "^13.5.4",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "@adonisjs/core": "^6.1.5-27",
+    "@adonisjs/redis": "^8.0.1"
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types.ts",
+      "./services/main.ts",
+      "./providers/resque_provider.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": true,
+    "sourcemap": true,
+    "target": "esnext"
+  },
+  "dependencies": {
+    "@poppinss/utils": "^6.7.2",
+    "node-resque": "^9.3.3"
+  }
+}
