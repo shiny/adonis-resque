@@ -10,6 +10,7 @@
   "exports": {
     ".": "./build/index.js",
     "./services/main": "./build/services/main.js",
+    "./commands": "./build/commands/main.js",
     "./providers/resque_provider": "./build/providers/resque_provider.js",
     "./types": "./build/types.js"
   },
@@ -22,8 +23,9 @@
     "typecheck": "tsc --noEmit",
     "copy:templates": "copyfiles --up 1 \"stubs/**/**/*.stub\" build",
     "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
-    "postcompile": "npm run copy:templates",
-    "test": "node --loader ts-node/esm --enable-source-maps bin/test.ts"
+    "postcompile": "npm run copy:templates && npm run index:commands",
+    "test": "node --loader ts-node/esm --enable-source-maps bin/test.ts",
+    "index:commands": "adonis-kit index build/commands"
   },
   "bugs": {
     "url": "https://github.com/shiny/adonis-resque/issues"
@@ -66,6 +68,9 @@
   "tsup": {
     "entry": [
       "./index.ts",
+      "./base_job.ts",
+      "commands/make_job.ts",
+      "commands/resque_start.ts",
       "./src/types.ts",
       "./services/main.ts",
       "./providers/resque_provider.ts"

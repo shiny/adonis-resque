@@ -1,7 +1,7 @@
 import type Configure from '@adonisjs/core/commands/configure'
-import pkg from './package.json'
 import { stubsRoot } from './stubs/index.js'
-const packageName = pkg.name
+import { packageName } from './index.js'
+
 /**
  * Configures the package
  */
@@ -15,5 +15,6 @@ export async function configure(command: Configure) {
      */
     await codemods.updateRcFile((rcFile) => {
         rcFile.addProvider(`${packageName}/providers/resque_provider`)
+        rcFile.addCommand(`${packageName}/commands`)
     })
 }

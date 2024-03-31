@@ -1,0 +1,18 @@
+{{{
+  exports({ to: app.configPath('resque.ts') })
+}}}
+import { defineConfig } from 'adonis-resque'
+
+const resqueConfig = defineConfig({
+    redisConnection: 'main',
+    isMultiWorkerEnabled: true,
+    multiWorkerOption: {
+        minTaskProcessors: 1,
+        maxTaskProcessors: 10
+    },
+    workerOption: {
+
+    }
+})
+
+export default resqueConfig

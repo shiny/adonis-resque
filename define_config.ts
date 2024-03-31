@@ -1,7 +1,11 @@
-import type { RedisConnections } from '@adonisjs/redis/types'
+import type { RedisConnections } from './types.js'
+import { MultiWorker, Worker } from 'node-resque'
 
 export function defineConfig<Connections extends RedisConnections>(config: {
-    redisConnection: keyof Connections
+    redisConnection: keyof Connections;
+    multiWorkerOption: MultiWorker['options']
+    isMultiWorkerEnabled: boolean
+    workerOption: Worker['options']
 }) {
     return config
 }
