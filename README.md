@@ -20,18 +20,144 @@ node ace add adonis-resque
 
 ## Configuration
 
-You can change it in `config/resque.ts`, it's all same with `createClient` Configuration.
+Here is an example of `config/resque.ts`
 
-## How to import
-As it is a container service, you can init it by
 ```typescript
-await app.container.make('resque')
-```
-or
-```typescript
-import resque from 'adonis-resque/services/main'
+{
+    /**
+     * redis connection config from @adonisjs/redis
+     */
+    redisConnection: 'main',
+    /**
+     * run web & worker in same process, if enabled
+     * You need to run command node ace resque:start if it is turned off
+     *
+     * it's convenient but NOT Recommanded in production
+     * also, DO NOT enable for math-heavy jobs, even in the dev or staging environment.
+     * 
+     */
+    runWorkerInWebEnv: true,
+    /**
+     * when runScheduler enabled, it starts with worker
+     * if you'd like to run scheduler in the separated processes
+     * please turn runScheduler off, and run command
+     * node ace resque:start --scheduler
+     */
+    runScheduler: true,
+    /**
+     * enable node-resque multiworker
+     * @docs https://github.com/actionhero/node-resque?tab=readme-ov-file#multi-worker
+     */
+    isMultiWorkerEnabled: true,
+    /**
+     * the first argument in MultiWorker constructor
+     */
+    multiWorkerOption: {
+        minTaskProcessors: 1,
+        maxTaskProcessors: 10
+    },
+    /**
+     * the argument for Worker constructor, if multiWorker is not enabled
+     */
+    workerOption: {
+    },
+    /**
+     * the default queue name for jobs to enqueue
+     */
+    queueNameForJobs: 'default',
+    /**
+     * queue name for workers to listen,
+     * is a string or an array of string
+     */
+    queueNameForWorkers: '*'
+}
 ```
 
+## Job
+You can create a resque job by adonis command: `node ace make:job <YourJobName>`
+
+> [!TIP]
+> You can import the job by `import Example from #jobs/example`, if you follow the instruction: [The sub-path imports](https://docs.adonisjs.com/guides/folder-structure#the-sub-path-imports).
+> Both `package.json` and `tsconfig.json` are required to add the job path.
+> - add `"#jobs/*": "./jobs/*.js"` to `package.json`
+> - add `"#jobs/*": ["./jobs/*.js"]` to field `compilerOptions.paths` in `tsconfig.json`.
+
+## Basic Usage
+
+Every job has a perform method. It runs in the background, which consumer from the node-resque queue.
+
+```typescript
+// app/jobs/basic_example.ts
+import { BaseJob } from 'node-resque'
+export default class BasicExample extends BaseJob {
+  async perform(name: string) {
+    console.log(`Hello ${name}`)
+  }
+}
+```
+
+Now you can enqueue this job by 
+```typescript
+import BasicExample from '#jobs/basic_example'
+await BasicExample.enqueue('Bob')
+
+// if you'd like to delay for 1000ms
+await BasicExample.enqueue('Bob').in(1000)
+```
+
+## Send Mail Job: a Basic Demonstration
+
+In Adonis Documentation, they use bullmq as mail queueing example.
+But if we wanna use `adonis-resque` for `mail.sendLater`, how to do?
+
+1. Create a Mail Job
+Run `node ace make:job Mail` to create a Mail Job, then modify it in `app/jobs/mail.ts`
+
+```typescript
+import { BaseJob } from 'adonis-resque'
+import mail from '@adonisjs/mail/services/main'
+import logger from '@adonisjs/core/services/logger'
+import { MessageBodyTemplates, NodeMailerMessage } from '@adonisjs/mail/types'
+
+interface Options {
+    mailMessage: {
+        message: NodeMailerMessage;
+        views: MessageBodyTemplates;
+    }
+    config: any
+}
+export default class Mail extends BaseJob {
+    async perform(option: Options) {
+        const { messageId } = await mail.use('smtp')
+            .sendCompiled(option.mailMessage, option.config)
+        logger.info(`Email sent, id is ${messageId}`)
+    }
+}
+```
+
+2. Custom `mail.setMessenger` in a service provider
+You can add the below code snippet to a boot method of any service provider
+
+```typescript
+const mail = await this.app.container.make('mail.manager')
+mail.setMessenger(() => {
+  return {
+    async queue(mailMessage, sendConfig) {
+      return Mail.enqueue({ mailMessage, config: sendConfig })
+    }
+  }
+})
+```
+
+3. `mail.sendLater` is available now!
+
+```typescript
+await mail.sendLater((message) => {
+  message.to('your-address@example.com', 'Your Name')
+  .subject('Hello from adonis-resque')
+  .html(`<strong>Congratulations!</strong>`)
+})
+```
 
 ## Documentation
 
