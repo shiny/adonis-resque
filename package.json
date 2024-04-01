@@ -62,7 +62,7 @@
     "typescript": "^5.4.3"
   },
   "peerDependencies": {
-    "@adonisjs/core": "^6.1.5-27",
+    "@adonisjs/core": "^6.5.0",
     "@adonisjs/redis": "^8.0.1"
   },
   "tsup": {
