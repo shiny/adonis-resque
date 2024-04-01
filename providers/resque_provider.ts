@@ -23,6 +23,21 @@ export default class ResqueProvider {
         })
     }
 
+    async start() {
+        const runWorkerInWebEnv = this.app.config.get<boolean>('resque.runWorkerInWebEnv')
+        if (this.app.getEnvironment() === 'web' && runWorkerInWebEnv) {
+            const ace = await this.app.container.make('ace')
+            await ace.boot()
+            if (ace.getCommand('resque:start')) {
+                const command = await ace.exec('resque:start', [])
+                if (command.exitCode !== 0 || command.error) {
+                    const error = command.error || new Error(`Failed to start command resque:start`)
+                    throw error
+                }
+            }
+        }
+    }
+
     async shutdown() {
         const queue = await this.app.container.make('queue')
         await queue.end()
