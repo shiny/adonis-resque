@@ -77,8 +77,11 @@ Here is an example of `config/resque.ts`
 You can create a resque job by adonis command: `node ace make:job <YourJobName>`
 
 > [!TIP]
-> You can import the job by `import Example from #jobs/example`, if you follow the instruction: [The sub-path imports](https://docs.adonisjs.com/guides/folder-structure#the-sub-path-imports).
-> Both `package.json` and `tsconfig.json` are required to add the job path.
+> You can import the job by sub-path.
+> `import Example from #jobs/example`  
+> Follow the instruction: [The sub-path imports](https://docs.adonisjs.com/guides/folder-structure#the-sub-path-imports).
+>  
+> Both `package.json` and `tsconfig.json` are required to add the job path:
 > - add `"#jobs/*": "./jobs/*.js"` to `package.json`
 > - add `"#jobs/*": ["./jobs/*.js"]` to field `compilerOptions.paths` in `tsconfig.json`.
 
@@ -96,7 +99,7 @@ export default class BasicExample extends BaseJob {
 }
 ```
 
-Now you can enqueue this job by 
+Now you can enqueue this job. 
 ```typescript
 import BasicExample from '#jobs/basic_example'
 await BasicExample.enqueue('Bob')
@@ -110,8 +113,8 @@ await BasicExample.enqueue('Bob').in(1000)
 In Adonis Documentation, they use bullmq as mail queueing example.
 But if we wanna use `adonis-resque` for `mail.sendLater`, how to do?
 
-1. Create a Mail Job
-Run `node ace make:job Mail` to create a Mail Job, then modify it in `app/jobs/mail.ts`
+1. Create a Mail Job  
+Run `node ace make:job Mail` to create the mail job, then edit it in `app/jobs/mail.ts`
 
 ```typescript
 import { BaseJob } from 'adonis-resque'
@@ -135,8 +138,8 @@ export default class Mail extends BaseJob {
 }
 ```
 
-2. Custom `mail.setMessenger` in a service provider
-You can add the below code snippet to a boot method of any service provider
+2. Custom `mail.setMessenger` in a service provider  
+You can add the below code snippet to a boot method of any service provider.
 
 ```typescript
 const mail = await this.app.container.make('mail.manager')
@@ -149,8 +152,7 @@ mail.setMessenger(() => {
 })
 ```
 
-3. `mail.sendLater` is available now!
-
+3. `mail.sendLater` is available now! Try it:
 ```typescript
 await mail.sendLater((message) => {
   message.to('your-address@example.com', 'Your Name')
