@@ -7,7 +7,7 @@ const resqueConfig = defineConfig({
     redisConnection: 'main',
     /**
      * run web & worker in same process, if enabled
-     * You need to run command `node ace resque:start` if it is turned off
+     * You need to run command node ace resque:start if it is turned off
      *
      * it's convenient but NOT Recommanded in production
      * also, DO NOT enable for math-heavy jobs, even in the dev or staging environment.
@@ -17,8 +17,8 @@ const resqueConfig = defineConfig({
     /**
      * when runScheduler enabled, it starts with worker
      * if you'd like to run scheduler in the separated processes
-     * please turn `runScheduler` off, and run command
-     * `node ace resque:start --scheduler`
+     * please turn runScheduler off, and run command
+     * node ace resque:start --scheduler
      */
     runScheduler: true,
     isMultiWorkerEnabled: true,
