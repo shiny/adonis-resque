@@ -1,6 +1,5 @@
 import type Configure from '@adonisjs/core/commands/configure'
-import { stubsRoot } from './stubs/index.js'
-import { packageName } from './index.js'
+import { packageName, stubsRoot } from './index.js'
 
 /**
  * Configures the package
