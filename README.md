@@ -152,7 +152,7 @@ mail.setMessenger(() => {
 })
 ```
 
-3. `mail.sendLater` is available now! Try it:
+3. `mail.sendLater` is available now! Try it: :shipit:
 ```typescript
 await mail.sendLater((message) => {
   message.to('your-address@example.com', 'Your Name')
@@ -160,6 +160,9 @@ await mail.sendLater((message) => {
   .html(`<strong>Congratulations!</strong>`)
 })
 ```
+
+> [!CAUTION]
+> You should insure `@adonisjs/mail` has a correct config, you'd better to test it first.
 
 ## Documentation
 
