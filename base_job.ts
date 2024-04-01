@@ -19,7 +19,8 @@ export default class BaseJob {
     allArgs: any[][] = []
     hasEnqueued: boolean = false
     hasEnqueuedAll: boolean = false
-
+    app = app
+    
     static enqueue<T extends typeof BaseJob>(this: T, ...args: Parameters<T['prototype']['perform']>) {
         const job = new this
         return job.enqueue(...args)
