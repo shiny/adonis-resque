@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "npm run compile",
-    "dev": "tsup-node --watch --onSuccess 'tsc -d'",
+    "dev": "tsup-node --watch --onSuccess 'tsc -d && npm run index:commands'",
     "typecheck": "tsc --noEmit",
     "copy:templates": "copyfiles --up 1 \"stubs/**/**/*.stub\" build",
     "compile": "tsup-node && tsc --emitDeclarationOnly --declaration",
