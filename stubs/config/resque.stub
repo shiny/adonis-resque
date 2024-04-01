@@ -5,14 +5,38 @@ import { defineConfig } from 'adonis-resque'
 
 const resqueConfig = defineConfig({
     redisConnection: 'main',
+    /**
+     * run web & worker in same process, if enabled
+     * You need to run command `node ace resque:start` if it is turned off
+     *
+     * it's convenient but NOT Recommanded in production
+     * also, DO NOT enable for math-heavy jobs, even in the dev or staging environment.
+     * 
+     */
+    runWorkerInWebEnv: true,
+    /**
+     * when runScheduler enabled, it starts with worker
+     * if you'd like to run scheduler in the separated processes
+     * please turn `runScheduler` off, and run command
+     * `node ace resque:start --scheduler`
+     */
+    runScheduler: true,
     isMultiWorkerEnabled: true,
     multiWorkerOption: {
         minTaskProcessors: 1,
         maxTaskProcessors: 10
     },
     workerOption: {
-
-    }
+    },
+    /**
+     * the default queue name for jobs to enqueue
+     */
+    queueNameForJobs: 'default',
+    /**
+     * queue name for workers to listen,
+     * is a string or an array of string
+     */
+    queueNameForWorkers: '*'
 })
 
 export default resqueConfig
