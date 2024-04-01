@@ -1,7 +1,9 @@
 import app from "@adonisjs/core/services/app"
-import { ResqueConfig } from "./types.js"
+import { JobSchedule, ResqueConfig } from "./types.js"
 
 export default class BaseJob {
+
+    schedule?: JobSchedule
 
     delayMs: number = 0
     runAtMs?: number

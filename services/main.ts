@@ -12,7 +12,8 @@ export async function importJobs() {
     return Jobs.reduce((accumulator, Job) => {
         const job = new Job
         accumulator[Job.name] = {
-            perform: job.perform.bind(job)
+            perform: job.perform.bind(job),
+            job
         }
         return accumulator
     }, {} as Record<string, NodeResqueJob>)
