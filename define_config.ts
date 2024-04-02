@@ -10,6 +10,8 @@ export function defineConfig<Connections extends RedisConnections>(config: {
     workerOption: Worker['options']
     queueNameForJobs: string
     queueNameForWorkers: string | string[]
+    logger: string | null
+    verbose: boolean
 }) {
     return config
 }

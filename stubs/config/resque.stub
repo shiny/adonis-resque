@@ -36,7 +36,13 @@ const resqueConfig = defineConfig({
      * queue name for workers to listen,
      * is a string or an array of string
      */
-    queueNameForWorkers: '*'
+    queueNameForWorkers: '*',
+    /**
+     * logger name in config/logger.ts
+     * null means the default
+     */
+    logger: null,
+    verbose: true,
 })
 
 export default resqueConfig

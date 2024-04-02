@@ -69,7 +69,13 @@ Here is an example of `config/resque.ts`
      * queue name for workers to listen,
      * is a string or an array of string
      */
-    queueNameForWorkers: '*'
+    queueNameForWorkers: '*',
+    /**
+     * set null to use the default logger
+     */
+    logger: null,
+    // verbose mode for debugging
+    verbose: true
 }
 ```
 
