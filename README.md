@@ -145,7 +145,6 @@ Run `node ace make:job Mail` to create the mail job, then edit it in `app/jobs/m
 ```typescript
 import { BaseJob } from 'adonis-resque'
 import mail from '@adonisjs/mail/services/main'
-import logger from '@adonisjs/core/services/logger'
 import { MessageBodyTemplates, NodeMailerMessage } from '@adonisjs/mail/types'
 
 interface Options {
@@ -159,7 +158,7 @@ export default class Mail extends BaseJob {
     async perform(option: Options) {
         const { messageId } = await mail.use('smtp')
             .sendCompiled(option.mailMessage, option.config)
-        logger.info(`Email sent, id is ${messageId}`)
+        this.logger.info(`Email sent, id is ${messageId}`)
     }
 }
 ```

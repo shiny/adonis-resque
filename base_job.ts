@@ -1,5 +1,7 @@
 import app from "@adonisjs/core/services/app"
 import { JobSchedule, ResqueConfig } from "./types.js"
+import { Logger, LoggerManager } from "@adonisjs/core/logger"
+import { LoggerConfig, LoggerManagerConfig } from "@adonisjs/core/types/logger"
 
 export default class BaseJob {
 
@@ -22,7 +24,20 @@ export default class BaseJob {
     hasEnqueued: boolean = false
     hasEnqueuedAll: boolean = false
     app = app
-    
+    logger: Logger
+    constructor() {
+        this.logger = this.createLogger()
+    }
+    createLogger() {
+        const loggerName = app.config.get<string | null>('resque.logger')
+        const loggerConfig = app.config.get<LoggerManagerConfig<Record<string, LoggerConfig>>>('logger')
+        const manager = new LoggerManager(loggerConfig)
+        if (loggerName) {
+            return manager.use(loggerName)
+        } else {
+            return manager.use()
+        }
+    }
     static enqueue<T extends typeof BaseJob>(this: T, ...args: Parameters<T['prototype']['perform']>) {
         const job = new this
         return job.enqueue(...args)
