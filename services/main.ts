@@ -1,23 +1,8 @@
 import app from "@adonisjs/core/services/app"
-import { fsImportAll } from "@poppinss/utils"
 import { MultiWorker, Worker } from "node-resque"
-import Job from "../base_job.js"
 import { RedisConnections } from '@adonisjs/redis/types'
 import { defineConfig } from "../define_config.js"
-import { NodeResqueJob } from '../types.js'
-
-export async function importJobs() {
-    const jobs: Record<string, typeof Job> = await fsImportAll(app.makePath('app/jobs'))
-    const Jobs = Object.values(jobs)
-    return Jobs.reduce((accumulator, Job) => {
-        const job = new Job
-        accumulator[Job.name] = {
-            perform: job.perform.bind(job),
-            job
-        }
-        return accumulator
-    }, {} as Record<string, NodeResqueJob>)
-}
+import { importAllJobs } from "../jobs.js"
 
 export function getConnection() {
     const resqueConfig = app.config.get<ReturnType<typeof defineConfig>>('resque')
@@ -35,7 +20,7 @@ export function getConnection() {
 }
 
 export async function createWorker(queues: string[]) {
-    const jobs = await importJobs()
+    const jobs = await importAllJobs()
     return new Worker({
         connection: getConnection(),
         queues
@@ -43,7 +28,7 @@ export async function createWorker(queues: string[]) {
 }
 
 export async function createMultiWorker(queues: string[]) {
-    const jobs = await importJobs()
+    const jobs = await importAllJobs()
     const multiWorkerOption = app.config.get<MultiWorker['options']>('resque.multiWorkerOption')
     return new MultiWorker({
         queues,
