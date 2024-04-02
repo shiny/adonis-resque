@@ -119,13 +119,10 @@ await BasicExample.enqueue('Bob').in(1000)
 class Job has a schedule property.
 - `schedule.interval`, .e.g '5s', '2h', '1d'. [package ms](https://github.com/vercel/ms) for more details.
 - `schedule.cron`, for cron syntax, look up the [croner package](https://github.com/hexagon/croner)
-- `schedule.immediate`, immediately enqueue it when worker started.
 
 ```typescript
 export default class BasicExample extends BaseJob {
   schedule = {
-    // immediately enqueue it when worker started.
-    immediate: true,
     // enqueue job cronly
     cron: '*/1 * * * * *',
     // enqueue every five minutes

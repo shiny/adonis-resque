@@ -11,5 +11,4 @@ export interface NodeResqueJob {
 export interface JobSchedule {
     interval?: string | number
     cron?: string
-    immediate?: boolean
 }
