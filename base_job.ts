@@ -88,13 +88,32 @@ export default class BaseJob {
         const queueName = this.queueName ?? resqueConfig.queueNameForJobs
         const queue = await app.container.make('queue')
         if (this.hasEnqueued) {
-            return queue.enqueue(queueName, jobName, this.args)
+            const getTips = () => {
+                if (!resqueConfig.verbose) {
+                    return undefined
+                }
+                const tips = `enqueued to queue ${queueName}, job ${jobName}`
+                if (this.delayMs) {
+                    return `${tips}, delay ${this.delayMs}ms`
+                } else if (this.runAtMs) {
+                    return `${tips}, run at ${this.runAtMs}`
+                } else {
+                    return tips
+                }
+            }
+            this.logger.info(getTips())
+            if (this.delayMs) {
+                return queue.enqueueIn(this.delayMs, queueName, jobName, this.args)
+            } else if (this.runAtMs) {
+                return queue.enqueueAt(this.runAtMs, queueName, jobName, this.args)
+            } else {
+                return queue.enqueue(queueName, jobName, this.args)
+            }
         } else if (this.hasEnqueuedAll) {
             return Promise.all(this.allArgs.map(arg => queue.enqueue(queueName, jobName, arg)))
         } else {
             return false
         }
-
     }
     /**
      * this method runs after an `await` statement
@@ -104,7 +123,7 @@ export default class BaseJob {
      * ```
      * @param fn 
      */
-    then(fn: (result: boolean | boolean[]) => void) {
+    then(fn: (result: void | boolean | boolean[]) => void) {
         this.execute().then(fn)
     }
 }
