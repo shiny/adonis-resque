@@ -18,67 +18,6 @@
 node ace add adonis-resque
 ```
 
-## Configuration
-
-Here is an example of `config/resque.ts`
-
-```typescript
-{
-    /**
-     * redis connection config from @adonisjs/redis
-     */
-    redisConnection: 'main',
-    /**
-     * run web & worker in same process, if enabled
-     * You need to run command node ace resque:start if it is turned off
-     *
-     * it's convenient but NOT Recommanded in production
-     * also, DO NOT enable for math-heavy jobs, even in the dev or staging environment.
-     * 
-     */
-    runWorkerInWebEnv: true,
-    /**
-     * when runScheduler enabled, it starts with worker
-     * if you'd like to run scheduler in the separated processes
-     * please turn runScheduler off, and run command
-     * node ace resque:start --scheduler
-     */
-    runScheduler: true,
-    /**
-     * enable node-resque multiworker
-     * @docs https://github.com/actionhero/node-resque?tab=readme-ov-file#multi-worker
-     */
-    isMultiWorkerEnabled: true,
-    /**
-     * the first argument in MultiWorker constructor
-     */
-    multiWorkerOption: {
-        minTaskProcessors: 1,
-        maxTaskProcessors: 10
-    },
-    /**
-     * the argument for Worker constructor, if multiWorker is not enabled
-     */
-    workerOption: {
-    },
-    /**
-     * the default queue name for jobs to enqueue
-     */
-    queueNameForJobs: 'default',
-    /**
-     * queue name for workers to listen,
-     * is a string or an array of string
-     */
-    queueNameForWorkers: '*',
-    /**
-     * set null to use the default logger
-     */
-    logger: null,
-    // verbose mode for debugging
-    verbose: true
-}
-```
-
 ## Job
 You can create a resque job by adonis command: `node ace make:job <YourJobName>`
 
@@ -100,7 +39,7 @@ Every job has a perform method. It runs in the background, which consumer from t
 import { BaseJob } from 'node-resque'
 export default class BasicExample extends BaseJob {
   async perform(name: string) {
-    console.log(`Hello ${name}`)
+    this.logger.info(`Hello ${name}`)
   }
 }
 ```
@@ -129,7 +68,7 @@ export default class BasicExample extends BaseJob {
     interval: '5m',
   }
   async perform(name: string) {
-    console.log(`Hello ${name}`)
+    this.logger.log(`Hello ${name}`)
   }
 }
 ```
@@ -191,6 +130,67 @@ await mail.sendLater((message) => {
 
 > [!CAUTION]
 > You should insure `@adonisjs/mail` has a correct config, you'd better to test it first.
+
+## Configuration
+
+Here is an example of `config/resque.ts`
+
+```typescript
+{
+    /**
+     * redis connection config from @adonisjs/redis
+     */
+    redisConnection: 'main',
+    /**
+     * run web & worker in same process, if enabled
+     * You need to run command node ace resque:start if it is turned off
+     *
+     * it's convenient but NOT Recommanded in production
+     * also, DO NOT enable for math-heavy jobs, even in the dev or staging environment.
+     * 
+     */
+    runWorkerInWebEnv: true,
+    /**
+     * when runScheduler enabled, it starts with worker
+     * if you'd like to run scheduler in the separated processes
+     * please turn runScheduler off, and run command
+     * node ace resque:start --scheduler
+     */
+    runScheduler: true,
+    /**
+     * enable node-resque multiworker
+     * @docs https://github.com/actionhero/node-resque?tab=readme-ov-file#multi-worker
+     */
+    isMultiWorkerEnabled: true,
+    /**
+     * the first argument in MultiWorker constructor
+     */
+    multiWorkerOption: {
+        minTaskProcessors: 1,
+        maxTaskProcessors: 10
+    },
+    /**
+     * the argument for Worker constructor, if multiWorker is not enabled
+     */
+    workerOption: {
+    },
+    /**
+     * the default queue name for jobs to enqueue
+     */
+    queueNameForJobs: 'default',
+    /**
+     * queue name for workers to listen,
+     * is a string or an array of string
+     */
+    queueNameForWorkers: '*',
+    /**
+     * set null to use the default logger
+     */
+    logger: null,
+    // verbose mode for debugging
+    verbose: true
+}
+```
 
 ## Documentation
 
