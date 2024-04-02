@@ -134,6 +134,9 @@ export default class BasicExample extends BaseJob {
 }
 ```
 
+> [!TIP]
+> You can and should run multi process schedules, only the leader would execute the cron job.
+
 ## Send Mail Job: a Basic Demonstration
 
 In Adonis Documentation, they use bullmq as mail queueing example.
