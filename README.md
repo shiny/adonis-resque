@@ -13,8 +13,9 @@
 
 <!-- TOC -->
 
-<!-- TOC -->
-
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Folders](#folders)
 - [Job Usage](#job-usage)
   - [Basic](#basic)
   - [Batch enqueue](#batch-enqueue)
@@ -27,23 +28,41 @@
 - [Reference](#reference)
 - [Lisence](#lisence)
 
-<!-- /TOC -->on
+<!-- /TOC -->
+
+## Introduction
+`adonis-resque` add the queue ability to adonis base on node-resque. Resque is a background job system backed by Redis.
+
+## Installation
 
 ```bash
 node ace add adonis-resque
 ```
 
-## Job Usage
-You can create a resque job by adonis command: `node ace make:job <YourJobName>`
+## Folders
+
+Jobs default place in folder `app/jobs`.
+You can import the job by sub-path.
+```typescript
+import Example from #jobs/example
+```
 
 > [!TIP]
-> You can import the job by sub-path.
-> `import Example from #jobs/example`  
-> Follow the instruction: [The sub-path imports](https://docs.adonisjs.com/guides/folder-structure#the-sub-path-imports).
->  
+> Please follow this instruction: [The sub-path imports](https://docs.adonisjs.com/guides/folder-structure#the-sub-path-imports).
+> 
 > Both `package.json` and `tsconfig.json` are required to add the job path:
-> - add `"#jobs/*": "./jobs/*.js"` to `package.json`
-> - add `"#jobs/*": ["./jobs/*.js"]` to field `compilerOptions.paths` in `tsconfig.json`.
+> - add to `package.json`
+>  ```json
+>  "#jobs/*": "./jobs/*.js"
+>  ```
+> - add to field `compilerOptions.paths` in `tsconfig.json`
+>  ```json
+>  "#jobs/*": ["./jobs/*.js"]
+>  ```
+
+
+## Job Usage
+You can create a resque job by adonis command: `node ace make:job <YourJobName>`
 
 ### Basic
 
@@ -51,7 +70,7 @@ Every job has a perform method. It runs in the background, which consumer from t
 
 ```typescript
 // app/jobs/basic_example.ts
-import { BaseJob } from 'node-resque'
+import { BaseJob } from 'adonis-resque'
 export default class BasicExample extends BaseJob {
   async perform(name: string) {
     this.logger.info(`Hello ${name}`)
