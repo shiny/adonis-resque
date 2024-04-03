@@ -6,8 +6,12 @@ import { packageName, stubsRoot } from './index.js'
  */
 export async function configure(command: Configure) {
     const codemods = await command.createCodemods()
-    await codemods.makeUsingStub(stubsRoot, 'config/resque.stub', {})
 
+    await codemods.listPackagesToInstall([{
+        name: '@adonisjs/redis',
+        isDevDependency: false
+    }])
+    await codemods.makeUsingStub(stubsRoot, 'config/resque.stub', {})
 
     /**
      * Register provider
