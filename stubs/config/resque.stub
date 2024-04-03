@@ -35,6 +35,9 @@ const resqueConfig = defineConfig({
     /**
      * queue name for workers to listen,
      * is a string or an array of string
+     * setting a proper queue name could change their priorities 
+     * e.g. queueNameForWorkers: "high-priority, medium-priority, low-priority"
+     * All the jobs in high-priority will be worked before any of the jobs in the other queues. 
      */
     queueNameForWorkers: '*',
     /**
