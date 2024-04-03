@@ -34,7 +34,8 @@
     "adonisjs",
     "adonis6",
     "resque",
-    "node-resque"
+    "node-resque",
+    "queue"
   ],
   "author": "Chieh",
   "license": "MIT",
