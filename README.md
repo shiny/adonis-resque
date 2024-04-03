@@ -38,7 +38,9 @@
 ```bash
 node ace add adonis-resque
 ```
-
+> [!IMPORTANT]
+> `adonis-redis` is required for resque redis connection.
+> 
 ## Folders
 
 Jobs default place in folder `app/jobs`.
