@@ -1,16 +1,34 @@
-<div align="center">
+
+<div>
   <img src="https://i.imgur.com/SWHLZNO.png" />
   <h3>Node Resque Queue for AdonisJS v6</h3>
   <p>A third-party wrapper for `node-resque` in AdonisJS v6.</p>
   <a href="https://www.npmjs.com/package/adonis-resque">
-    <img src="https://img.shields.io/npm/v/adonis-resque.svg?style=for-the-badge&logo=npm" />
+    <img src="https://img.shields.io/npm/v/adonis-resque?logo=nodedotjs" />
   </a>
-  <img src="https://img.shields.io/npm/l/adonis-resque?color=blueviolet&style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript" />
+  <img src="https://img.shields.io/badge/Lang-typescript-blue?logo=typescript" />
+  <img src="https://img.shields.io/npm/l/adonis-resque?logo=opensourceinitiative" />
 </div>
 
 > [!CAUTION]
 > This package is not compatible with AdonisJS v5.
+
+<!-- TOC -->
+
+- [Installation](#installation)
+- [Job Usage](#job-usage)
+  - [Basic](#basic)
+  - [Batch enqueue](#batch-enqueue)
+  - [Delayed enqueue](#delayed-enqueue)
+  - [Repeated Enqueue](#repeated-enqueue)
+- [Demonstration](#demonstration)
+  - [Send Mail Job](#send-mail-job)
+- [Configuration](#configuration)
+- [Web UI](#web-ui)
+- [Reference](#reference)
+- [Lisence](#lisence)
+
+<!-- /TOC -->
 
 ## Installation
 
@@ -18,7 +36,7 @@
 node ace add adonis-resque
 ```
 
-## Job
+## Job Usage
 You can create a resque job by adonis command: `node ace make:job <YourJobName>`
 
 > [!TIP]
@@ -30,7 +48,7 @@ You can create a resque job by adonis command: `node ace make:job <YourJobName>`
 > - add `"#jobs/*": "./jobs/*.js"` to `package.json`
 > - add `"#jobs/*": ["./jobs/*.js"]` to field `compilerOptions.paths` in `tsconfig.json`.
 
-## Basic Usage
+### Basic
 
 Every job has a perform method. It runs in the background, which consumer from the node-resque queue.
 
@@ -53,20 +71,36 @@ await BasicExample.enqueue('Bob')
 await BasicExample.enqueue('Bob').in(1000)
 ```
 
-## Enqueue Job Repeatedly
+### Batch enqueue
+```typescript
+await BasicExample.enqueueAll(['Alice', 'Bob', 'Carol', 'Dave', 'Eve'])
+```
 
-class Job has a schedule property.
-- `schedule.interval`, .e.g '5s', '2h', '1d'. [package ms](https://github.com/vercel/ms) for more details.
-- `schedule.cron`, for cron syntax, look up the [croner package](https://github.com/hexagon/croner)
+### Delayed enqueue
+```typescript
+const oneSecondLater = 1000
+await BasicExample.enqueue('Bob').in(oneSecondLater)
+```
+Or enqueue at a specify timestamp
+```typescript
+const fiveSecondsLater = new Date().getTime() + 5000
+await BasicExample.enqueue('Bob').at(fiveSecondsLater)
+```
+
+### Repeated Enqueue
+
+class Job has the schedule properties.
+- `interval`, .e.g `5s`, `15m`, `2h` and `1d`. [package ms](https://github.com/vercel/ms) for more details.
+- `cron`, for cron syntax, look up the [croner package](https://github.com/hexagon/croner)
+
+The example below enqueue in both every 1 second and 5 minutes, since it's `cron`/`interval` settings.
 
 ```typescript
 export default class BasicExample extends BaseJob {
-  schedule = {
-    // enqueue job cronly
-    cron: '*/1 * * * * *',
-    // enqueue every five minutes
-    interval: '5m',
-  }
+  // enqueue job cronly
+  cron: '*/1 * * * * *',
+  // enqueue every five minutes
+  interval: '5m',
   async perform(name: string) {
     this.logger.log(`Hello ${name}`)
   }
@@ -74,9 +108,13 @@ export default class BasicExample extends BaseJob {
 ```
 
 > [!TIP]
-> You can and should run multi process schedules, only the leader would execute the cron job.
+> You can and should run multi process schedules.
+> Not all schedules will enquene the cron job,
+> only the leader do, even in the different machines.  
+> For more informations, see node-resque leader scheduler: https://github.com/actionhero/node-resque?tab=readme-ov-file#job-schedules
 
-## Send Mail Job: a Basic Demonstration
+## Demonstration
+### Send Mail Job
 
 In Adonis Documentation, they use bullmq as mail queueing example.
 But if we wanna use `adonis-resque` for `mail.sendLater`, how to do?
@@ -181,7 +219,11 @@ Here is an example of `config/resque.ts`
     /**
      * queue name for workers to listen,
      * is a string or an array of string
+     * setting a proper queue name could change their priorities 
+     * e.g. queueNameForWorkers: "high-priority, medium-priority, low-priority"
+     * All the jobs in high-priority will be worked before any of the jobs in the other queues. 
      */
+    queueNameForWorkers: '*',
     queueNameForWorkers: '*',
     /**
      * set null to use the default logger
@@ -192,9 +234,31 @@ Here is an example of `config/resque.ts`
 }
 ```
 
-## Documentation
+## Web UI
+node-resque also compatible with some Resque Web UI, .e.g [resque-web](https://github.com/resque/resque-web)
 
-See [node-resque](https://github.com/actionhero/node-resque)
+Here is `docker-compose.yml` an example
+```yaml
+services:
+  redis:
+    image: redis
+  resque-web:
+    image: appwrite/resque-web:1.1.0
+    ports:
+      - "5678:5678"
+    environment:
+      - RESQUE_WEB_HOST=redis # (OPTIONAL - Use only if different than the default 127.0.0.1)
+      - RESQUE_WEB_PORT=6379  # (OPTIONAL - Use only if different the default 6379)
+      - RESQUE_WEB_HTTP_BASIC_AUTH_USER= # (OPTIONAL - if not set no password used)
+      - RESQUE_WEB_HTTP_BASIC_AUTH_PASSWORD=  # (OPTIONAL - if not set no password used)
+    depends_on:
+      - redis
+    restart: unless-stopped
+```
+![Web UI](https://imgur.com/nN2d9ak)
+## Reference
+
+- [node-resque](https://github.com/actionhero/node-resque)
 
 ## Lisence
 the MIT

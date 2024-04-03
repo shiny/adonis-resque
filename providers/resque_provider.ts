@@ -1,8 +1,9 @@
 import { ApplicationService } from '@adonisjs/core/types'
-import { Queue, ResqueConfig } from '../types.js'
+import { Queue } from '../types.js'
 import { importAllJobs } from '../jobs.js'
 import { BaseCommand } from '@adonisjs/core/ace'
 import { createQueue } from '../queue.js'
+import { getConfig } from '../index.js'
 
 declare module '@adonisjs/core/types' {
     interface ContainerBindings {
@@ -18,15 +19,14 @@ export default class ResqueProvider {
     register() {
         this.app.container.singleton('queue', async () => {
             const jobs = await importAllJobs()
-            const queue = await createQueue(jobs)
+            const queue = createQueue(jobs)
             await queue.connect()
             return queue
         })
     }
 
     async start() {
-        const { runWorkerInWebEnv } = this.app.config.get<ResqueConfig>('resque')
-        if (this.app.getEnvironment() === 'web' && runWorkerInWebEnv) {
+        if (this.app.getEnvironment() === 'web' && getConfig('runWorkerInWebEnv')) {
             const ace = await this.app.container.make('ace')
             await ace.boot()
             if (ace.getCommand('resque:start')) {

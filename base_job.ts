@@ -1,11 +1,12 @@
 import app from "@adonisjs/core/services/app"
-import { JobSchedule, ResqueConfig } from "./types.js"
+import { ResqueConfig } from "./types.js"
 import { Logger, LoggerManager } from "@adonisjs/core/logger"
 import { LoggerConfig, LoggerManagerConfig } from "@adonisjs/core/types/logger"
 
 export default class BaseJob {
 
-    schedule?: JobSchedule
+    interval?: string | number
+    cron?: string
 
     delayMs: number = 0
     runAtMs?: number
@@ -28,7 +29,7 @@ export default class BaseJob {
     constructor() {
         this.logger = this.createLogger()
     }
-    createLogger() {
+    private createLogger() {
         const loggerName = app.config.get<string | null>('resque.logger')
         const loggerConfig = app.config.get<LoggerManagerConfig<Record<string, LoggerConfig>>>('logger')
         const manager = new LoggerManager(loggerConfig)

@@ -9,7 +9,7 @@ export function defineConfig<Connections extends RedisConnections>(config: {
     multiWorkerOption: MultiWorker['options']
     workerOption: Worker['options']
     queueNameForJobs: string
-    queueNameForWorkers: string | string[]
+    queueNameForWorkers: string
     logger: string | null
     verbose: boolean
 }) {

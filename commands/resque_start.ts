@@ -1,10 +1,10 @@
 import { BaseCommand, flags } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { createWorker, createMultiWorker, isMultiWorkerEnabled } from 'adonis-resque/services/main'
-import { ResqueConfig } from '../types.js'
 import { importAllJobs } from '../jobs.js'
 import { cancelSchedules, createScheduler, Interval, startJobSchedules } from '../scheduler.js'
 import { MultiWorker, Scheduler, Worker } from 'node-resque'
+import { getConfig } from '../index.js'
 
 export default class ResqueStart extends BaseCommand {
     static commandName = 'resque:start'
@@ -36,26 +36,39 @@ export default class ResqueStart extends BaseCommand {
     })
     declare verbose: boolean
 
+    @flags.array({
+        description: 'queue names for worker to listen'
+    })
+    declare queueName: string[]
+
     intervals?: Interval[]
     workerInstance?: MultiWorker | Worker
     schedulerInstance?: Scheduler
 
     async run() {
         const pid = process.pid
-        const isMultiWorker = this.isMulti ?? isMultiWorkerEnabled()
-        if (this.worker && isMultiWorker) {
-            this.workerInstance = await createMultiWorker(['default'])
+        const jobs = await importAllJobs()
+
+        if (this.worker) {
+            const queueNames =
+                this.queueName ?? getConfig('queueNameForWorkers')
+                    .split(',')
+                    .map((value) => value.trim())
+                    .filter((value) => value !== '')
+            const isMultiWorker = this.isMulti ?? isMultiWorkerEnabled()
+            if (isMultiWorker) {
+                this.workerInstance = createMultiWorker(jobs, queueNames)
+                this.logger.info(`Resque multiWorker:${pid} started.`)
+            } else {
+                this.workerInstance = createWorker(jobs, queueNames)
+                await this.workerInstance.connect()
+            }
             await this.workerInstance.start()
-            this.logger.info(`Resque multiWorker:${pid} started.`)
-        } else if(this.worker) {
-            this.workerInstance = await createWorker(['default'])
-            await this.workerInstance.connect()
-            await this.workerInstance.start()
-            this.logger.info(`Resque worker:${pid} started`)
+
         }
-        const { runScheduler } = this.app.config.get<ResqueConfig>('resque')
+        const runScheduler = getConfig('runScheduler')
         if (this.schedule ?? runScheduler) {
-            this.schedulerInstance = await createScheduler()
+            this.schedulerInstance = createScheduler()
             await this.schedulerInstance.connect()
             await this.schedulerInstance.start()
             const jobs = await importAllJobs()
@@ -65,20 +78,13 @@ export default class ResqueStart extends BaseCommand {
     }
 
     prepare() {
-        const { verbose } = this.app.config.get<ResqueConfig>('resque')
-        const isVerbose = this.verbose ?? verbose
-        this.app.listen('SIGINT', async () => {
+        const isVerbose = this.verbose ?? getConfig('verbose')
+        const terminate = async (signal: NodeJS.Signals) => {
             if (isVerbose)
-                this.logger.info('Receive SIGINT')
+                this.logger.info('Receive ' + signal)
             await this.terminate()
-        })
-        this.app
-            .listen('SIGTERM', async () => {
-                if (isVerbose)
-                    this.logger.info('Receive SIGTERM')
-                await this.terminate()
-            })
-        this.app.terminating(async () => {
+        }
+        const cleanup = async () => {
             this.logger.info('Resque worker terminating...')
             if (this.workerInstance) {
                 await this.workerInstance.end()
@@ -87,6 +93,8 @@ export default class ResqueStart extends BaseCommand {
                 await this.schedulerInstance.end()
             }
             cancelSchedules(this.intervals)
-        })
+        }
+        this.app.listen('SIGINT', terminate).listen('SIGTERM', terminate)
+        this.app.terminating(cleanup)
     }
 }
