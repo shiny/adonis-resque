@@ -1,5 +1,5 @@
 
-<div>
+<div align="center">
   <img src="https://i.imgur.com/SWHLZNO.png" />
   <h3>Node Resque Queue for AdonisJS v6</h3>
   <p>A third-party wrapper for `node-resque` in AdonisJS v6.</p>
