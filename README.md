@@ -13,7 +13,8 @@
 
 <!-- TOC -->
 
-- [Installation](#installation)
+<!-- TOC -->
+
 - [Job Usage](#job-usage)
   - [Basic](#basic)
   - [Batch enqueue](#batch-enqueue)
@@ -26,9 +27,7 @@
 - [Reference](#reference)
 - [Lisence](#lisence)
 
-<!-- /TOC -->
-
-## Installation
+<!-- /TOC -->on
 
 ```bash
 node ace add adonis-resque
@@ -253,7 +252,8 @@ services:
       - redis
     restart: unless-stopped
 ```
-![Web UI](https://imgur.com/nN2d9ak)
+
+![Web UI](https://i.imgur.com/nN2d9ak.png)
 ## Reference
 
 - [node-resque](https://github.com/actionhero/node-resque)
