@@ -25,6 +25,7 @@
   - [Send Mail Job](#send-mail-job)
 - [Configuration](#configuration)
 - [Web UI](#web-ui)
+- [Notice for the graceful exit](#notice-for-the-graceful-exit)
 - [Reference](#reference)
 - [Lisence](#lisence)
 
@@ -68,10 +69,10 @@ You can create a resque job by adonis command: `node ace make:job <YourJobName>`
 
 ### Basic
 
+Create a basic example job: `node ace make:job BasicExample`.
 Every job has a perform method. It runs in the background, which consumer from the node-resque queue.
 
 ```typescript
-// app/jobs/basic_example.ts
 import { BaseJob } from 'adonis-resque'
 export default class BasicExample extends BaseJob {
   async perform(name: string) {
@@ -84,14 +85,22 @@ Now you can enqueue this job.
 ```typescript
 import BasicExample from '#jobs/basic_example'
 await BasicExample.enqueue('Bob')
-
-// if you'd like to delay for 1000ms
-await BasicExample.enqueue('Bob').in(1000)
 ```
+
+Console would print `Hello Bob`.
+
+> [!WARNING]
+> Make sure your Job ClassName is unique in the queue. and argument of method perform would be jsonify to redis.
 
 ### Batch enqueue
 ```typescript
-await BasicExample.enqueueAll(['Alice', 'Bob', 'Carol', 'Dave', 'Eve'])
+await BasicExample.enqueueAll([
+  ['Alice'],
+  ['Bob'],
+  ['Carol'],
+  ['Dave'],
+  ['Eve']
+])
 ```
 
 ### Delayed enqueue
@@ -275,6 +284,23 @@ services:
 ```
 
 ![Web UI](https://i.imgur.com/nN2d9ak.png)
+
+## Notice for the graceful exit
+resque require the graceful exit, or schedulers would waiting for a leader election.
+
+node-resque may not exit in dev environment if you exit by `ctrl+c`.
+you can change `bin/server.ts`
+```typescript
+app.listenIf(app.managedByPm2, 'SIGINT', () => app.terminate())
+```
+to 
+```typescript
+app.listen('SIGINT', () => app.terminate())
+```
+
+if adonis dev server terminated but process still there, you can send SIGTERM signal to all node process(on macOS) `killall node`
+
+You can also check the redis key `resque:resque_scheduler_leader_lock`, which value is scheduler name contains pid of the leader process. it should be release once server terminated.
 ## Reference
 
 - [node-resque](https://github.com/actionhero/node-resque)
