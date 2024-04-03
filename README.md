@@ -55,11 +55,11 @@ import Example from #jobs/example
 > Both `package.json` and `tsconfig.json` are required to add the job path:
 > - add to `package.json`
 >  ```json
->  "#jobs/*": "./jobs/*.js"
+>  "#jobs/*": "./app/jobs/*.js"
 >  ```
 > - add to field `compilerOptions.paths` in `tsconfig.json`
 >  ```json
->  "#jobs/*": ["./jobs/*.js"]
+>  "#jobs/*": ["./app/jobs/*.js"]
 >  ```
 
 
