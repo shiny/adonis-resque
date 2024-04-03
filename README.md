@@ -3,9 +3,7 @@
   <img src="https://i.imgur.com/SWHLZNO.png" />
   <h3>Node Resque Queue for AdonisJS v6</h3>
   <p>A third-party wrapper for `node-resque` in AdonisJS v6.</p>
-  <a href="https://www.npmjs.com/package/adonis-resque">
-    <img src="https://img.shields.io/npm/v/adonis-resque?logo=nodedotjs" />
-  </a>
+  <a href="https://www.npmjs.com/package/adonis-resque"><img src="https://img.shields.io/npm/v/adonis-resque?logo=nodedotjs" /></a>
   <img src="https://img.shields.io/badge/Lang-typescript-blue?logo=typescript" />
   <img src="https://img.shields.io/npm/l/adonis-resque?logo=opensourceinitiative" />
 </div>
