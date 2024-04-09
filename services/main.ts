@@ -10,11 +10,9 @@ export function getConnection() {
     return {
         host: connection.host,
         port: Number.parseInt(connection.port ?? '6379'),
-        options: {
-        password: connection.password,
-        },
+        options: connection,
         pkg: 'ioredis',
-        database: 0
+        database: 0,
     }
 }
 
