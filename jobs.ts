@@ -11,7 +11,14 @@ export async function importAllJobs() {
     return Jobs.reduce((accumulator, Job) => {
         const job = new Job
         accumulator[Job.name] = {
-            perform: job.perform.bind(job),
+            perform: async (...args: any[]) => {
+                try {
+                    const jobResult = await job.perform.call(job, ...args)
+                    return jobResult
+                } catch (error) {
+                    return job.handleError.call(job, error)
+                }
+            },
             job
         }
         return accumulator

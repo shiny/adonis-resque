@@ -83,6 +83,9 @@ export default class BaseJob {
     perform(..._args: any[]): any {
 
     }
+    handleError(error: unknown) {
+        throw error
+    }
     private async execute() {
         const resqueConfig = app.config.get<ResqueConfig>('resque')
         const jobName = this.jobName ?? this.constructor.name
