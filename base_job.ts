@@ -84,6 +84,7 @@ export default class BaseJob {
 
     }
     handleError(error: unknown) {
+        this.logger.error((error as Error).message)
         throw error
     }
     private async execute() {
