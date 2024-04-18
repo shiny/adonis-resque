@@ -19,7 +19,12 @@ export async function importAllJobs() {
                     return job.handleError.call(job, error)
                 }
             },
-            job
+            job,
+            plugins: job.plugins.map(([plugin]) => plugin),
+            pluginOptions: job.plugins.reduce((acc, [plugin, options]) => {
+                acc[plugin.name] = options
+                return acc
+            }, {} as Record<string, any>)
         }
         return accumulator
     }, {} as Record<string, NodeResqueJob>)

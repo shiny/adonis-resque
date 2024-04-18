@@ -2,11 +2,14 @@ import app from "@adonisjs/core/services/app"
 import { ResqueConfig } from "./types.js"
 import { Logger, LoggerManager } from "@adonisjs/core/logger"
 import { LoggerConfig, LoggerManagerConfig } from "@adonisjs/core/types/logger"
+import { Plugin } from "node-resque"
 
 export default class BaseJob {
 
     interval?: string | number
     cron?: string
+
+    plugins: [typeof Plugin, any][] = []
 
     delayMs: number = 0
     runAtMs?: number

@@ -21,6 +21,13 @@
   - [Batch enqueue](#batch-enqueue)
   - [Delayed enqueue](#delayed-enqueue)
   - [Repeated Enqueue](#repeated-enqueue)
+- [Node-Resque Plugin](#node-resque-plugin)
+  - [Plugin.jobLock](#pluginjoblock)
+  - [Plugin.queueLock](#pluginqueuelock)
+  - [Plugin.delayQueueLock](#plugindelayqueuelock)
+  - [Plugin.retry](#pluginretry)
+  - [Plugin.noop](#pluginnoop)
+  - [Custom Your Own Plugin](#custom-your-own-plugin)
 - [Demonstration](#demonstration)
   - [Send Mail Job](#send-mail-job)
 - [Configuration](#configuration)
@@ -29,6 +36,9 @@
 - [Reference](#reference)
 - [Lisence](#lisence)
 
+<!-- /TOC -->
+
+<!-- /TOC -->
 <!-- /TOC -->
 
 ## Introduction
@@ -139,6 +149,135 @@ export default class BasicExample extends BaseJob {
 > Not all schedules will enquene the cron job,
 > only the leader do, even in the different machines.  
 > For more informations, see node-resque leader scheduler: https://github.com/actionhero/node-resque?tab=readme-ov-file#job-schedules
+
+## Node-Resque Plugin
+
+Adonis-resque encapsulated the default node-resque plugins in a smooth way, with the better typing support.
+
+The default node-resque plugins are:
+
+- `Retry`
+- `JobLock`
+- `Retry`
+- `QueueLock`
+- `DelayQueueLock`
+- `Noop`
+
+You can adding them to the `plugins` property of your job class, by `Plugin.<PluginName>({...pluginOptions})`
+
+### Plugin.jobLock
+
+JobLock plugin is used to prevent a job to be performed (hook in `beforePerform`), which has the same name, queue and args is already running.
+
+If reEnqueue is `true`, the job will be put back (re-enqueue) with a delay <enqueueTimeout>.
+
+```typescript
+import { BaseJob, Plugin } from "adonis-resque"
+
+export default class ExampleJob extends BaseJob {
+    plugins = [
+        Plugin.jobLock({ reEnqueue: false, enqueueTimeout: 3000 })
+    ]
+    async perform() {
+        this.logger.info('Example job started')
+        await sleep(60000)
+        this.logger.info('Example job done')
+    }
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+```
+
+### Plugin.queueLock
+
+Similar to jobLock, but it would be prevented before enqueue.
+If a job with the same name, queue, and args is already in the queue, do not enqueue it again.
+
+QueueLock Options:
+
+```typescript
+export interface QueueLockOptions {
+    /**
+     * in seconds
+     */
+    lockTimeout?: number
+    key?: LockKey
+}
+```
+### Plugin.delayQueueLock
+
+Same as queueLock, but it is for the delay queue.
+
+
+### Plugin.retry
+
+If a job fails, retry it <retryLimit> times before finally placing it into the failed queue
+You can specify the retryDelay option to delay, or set the backoffStrategy to the delay ms array.
+Note:
+It will retry by key, composed of queueName, jobName and args.
+Not retry by the enqueuing action.
+
+```typescript
+import { BaseJob, Plugin } from "adonis-resque"
+
+export default class ExampleJob extends BaseJob {
+    plugins = [
+        Plugin.retry({
+            retryLimit: 3,
+            backoffStrategy: [1000, 3000, 8000]
+        })
+    ]
+    async perform() {
+        const res = await fetch(`https://dummyjson.com/products/1`)
+        this.logger.info(`Response status is ${res.status}`)
+    }
+}
+```
+
+### Plugin.noop
+
+you can customize the error logger by option `logger`
+
+### Custom Your Own Plugin
+
+You can create your own plugin by extending the `BasePlugin` class,
+it also implements the `Plugin` abstract class from `node-resque`.
+See more details in [node-resque plugins](https://github.com/actionhero/node-resque?tab=readme-ov-file#plugins).
+
+```typescript
+import { BasePlugin } from "adonis-resque"
+export default class MyPlugin extends BasePlugin {
+    /**
+     * Plugin options here
+     * with default values
+     */
+    options = {
+        foo: 'bar'
+    }
+    async beforeEnqueue() {
+    }
+    async afterEnqueue() {
+    }
+    async beforePerform(){
+    }
+    async afterPerform() {
+    }
+}
+```
+
+Now you can use it in your job class:
+```typescript
+import { BaseJob } from "adonis-resque"
+// import MyPlugin from './my-plugin'
+
+class ExampleJob extends BaseJob {
+    plugins = [
+        MyPlugin.create({ foo: 'baz' })
+    ]
+}
+```
 
 ## Demonstration
 ### Send Mail Job
