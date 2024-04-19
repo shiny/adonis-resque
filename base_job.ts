@@ -29,7 +29,7 @@ export default class BaseJob {
     hasEnqueuedAll: boolean = false
     app = app
     logger: Logger
-    constructor() {
+    constructor(..._args: any[]) {
         this.logger = this.createLogger()
     }
     private createLogger() {
