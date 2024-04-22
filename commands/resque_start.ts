@@ -49,7 +49,7 @@ export default class ResqueStart extends BaseCommand {
         const pid = process.pid
         const jobs = await importAllJobs()
         const emitter = await this.app.container.make('emitter')
-
+        const verbose = this.verbose?? getConfig('verbose')
         if (this.worker) {
             const queueNames =
                 this.queueName ?? getConfig('queueNameForWorkers')
@@ -59,25 +59,50 @@ export default class ResqueStart extends BaseCommand {
             const isMultiWorker = this.isMulti ?? isMultiWorkerEnabled()
             if (isMultiWorker) {
                 this.workerInstance = createMultiWorker(jobs, queueNames) as MultiWorker
-                this.logger.info(`Resque multiWorker:${pid} started.`)
+                this.logger.info(`Resque multiWorker:${pid} started with ${Object.keys(jobs).length} jobs`)
                 this.workerInstance.on('failure', (workerId: number, queue: string, job: ParsedJob, failure: Error, duration: number) => {
+                    if (verbose)
+                        this.logger.info(`Job ${job.class} in queue ${queue} failed on worker ${workerId} in ${duration}ms`)
                     emitter.emit('resque:failure', {
                         workerId,
                         queue,
                         job: jobs[job.class],
                         failure,
-                        duration
+                        duration,
+                        args: job.args,
+                        pluginOptions: job.pluginOptions
                     })
                 })
+                this.workerInstance.on('cleaning_worker', (workerId: number, _worker: Worker, pid: number) => {
+                    if (verbose)
+                        this.logger.info(`Worker ${workerId} (PID ${pid}) cleaning up...`)
+                })
+                this.workerInstance.on('end', (workerId: number) => {
+                    if (verbose)
+                        this.logger.info(`Worker ${workerId} ended.`)
+                })
+                this.workerInstance.on('success', (workerId: number, queue: string, job: ParsedJob, _result: any, duration: number) => {
+                    if (verbose)
+                        this.logger.info(`Job ${job.class} in queue ${queue} completed on worker ${workerId} in ${duration}ms`)
+                })
+
             } else {
                 this.workerInstance = createWorker(jobs, queueNames)
                 this.workerInstance.on('failure', (queue: string, job: ParsedJob, failure: Error, duration: number) => {
+                    if (verbose)
+                        this.logger.info(`Job ${job.class} in queue ${queue} failed in ${duration}ms`)
                     emitter.emit('resque:failure', {
                         queue,
                         job: jobs[job.class],
                         failure,
-                        duration
+                        duration,
+                        args: job.args,
+                        pluginOptions: job.pluginOptions
                     })
+                })
+                this.workerInstance.on('success', (queue: string, job: ParsedJob, _result: any, duration: number) => {
+                    if (verbose)
+                        this.logger.info(`Job ${job.class} in queue ${queue} completed in ${duration}ms`)
                 })
                 await this.workerInstance.connect()
             }
@@ -89,8 +114,13 @@ export default class ResqueStart extends BaseCommand {
             this.schedulerInstance = createScheduler()
             await this.schedulerInstance.connect()
             await this.schedulerInstance.start()
+            this.schedulerInstance.on('end', () => {
+                if (verbose)
+                    this.logger.info(`Scheduler ended.`)
+            })
             this.intervals = await startJobSchedules(this.schedulerInstance, jobs)
-            this.logger.info(`Scheduler:${pid} started`)
+            if (verbose)
+                this.logger.info(`Scheduler:${pid} started`)
         }
     }
 
