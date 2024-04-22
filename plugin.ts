@@ -20,7 +20,7 @@ export interface JobLockOptions {
     key?: LockKey
 }
 export interface NoopOptions {
-    logger: (error: Error) => unknown
+    logger?: (error: Error) => unknown
 }
 export interface QueueLockOptions {
     /**
@@ -54,7 +54,7 @@ export class Plugin {
      * If true, re-enqueue the job if it is already running. If false, do not enqueue the job if it is already running.
      * @docs Source code: https://github.com/actionhero/node-resque/blob/main/src/plugins/JobLock.ts
      */
-    static jobLock (options: JobLockOptions): [typeof Plugins.JobLock, JobLockOptions] {
+    static jobLock (options: JobLockOptions = {}): [typeof Plugins.JobLock, JobLockOptions] {
         return [Plugins.JobLock, options]
     }
     /**
@@ -72,7 +72,7 @@ export class Plugin {
      * @docs Source code: https://github.com/actionhero/node-resque/blob/main/src/plugins/Noop.ts
      * A function to log the error.
      */
-    static noop(options: NoopOptions): [typeof Plugins.Noop, NoopOptions] {
+    static noop(options: NoopOptions = {}): [typeof Plugins.Noop, NoopOptions] {
         return [Plugins.Noop, options]
     }
     /**
@@ -83,7 +83,7 @@ export class Plugin {
      * @param options.key
      * @docs Source Code: https://github.com/actionhero/node-resque/blob/main/src/plugins/QueueLock.ts
      */
-    static queueLock(options: QueueLockOptions): [typeof Plugins.QueueLock, QueueLockOptions] {
+    static queueLock(options: QueueLockOptions = {}): [typeof Plugins.QueueLock, QueueLockOptions] {
         return [Plugins.QueueLock, options]
     }
     /**
@@ -95,7 +95,7 @@ export class Plugin {
      * @param options.backoffStrategy
      * @docs Source code: https://github.com/actionhero/node-resque/blob/main/src/plugins/Retry.ts
      */
-    static retry(options: RetryOptions): [typeof Plugins.Retry, RetryOptions] {
+    static retry(options: RetryOptions = {}): [typeof Plugins.Retry, RetryOptions] {
         return [Plugins.Retry, options]
     }
 }
