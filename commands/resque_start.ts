@@ -81,9 +81,9 @@ export default class ResqueStart extends BaseCommand {
                     if (verbose)
                         this.logger.info(`Worker ${workerId} ended.`)
                 })
-                this.workerInstance.on('success', (workerId: number, queue: string, job: ParsedJob, _result: any, duration: number) => {
+                this.workerInstance.on('success', (workerId: number, queue: string, job: ParsedJob, result: any, duration: number) => {
                     if (verbose)
-                        this.logger.info(`Job ${job.class} in queue ${queue} completed on worker ${workerId} in ${duration}ms`)
+                        this.logger.success(`Job ${job.class} in queue ${queue} completed on worker ${workerId} in ${duration}ms, result: ${JSON.stringify(result)}`)
                 })
 
             } else {
@@ -100,9 +100,9 @@ export default class ResqueStart extends BaseCommand {
                         pluginOptions: job.pluginOptions
                     })
                 })
-                this.workerInstance.on('success', (queue: string, job: ParsedJob, _result: any, duration: number) => {
+                this.workerInstance.on('success', (queue: string, job: ParsedJob, result: any, duration: number) => {
                     if (verbose)
-                        this.logger.info(`Job ${job.class} in queue ${queue} completed in ${duration}ms`)
+                        this.logger.success(`Job ${job.class} in queue ${queue} completed in ${duration}ms, result: ${JSON.stringify(result)}`)
                 })
                 await this.workerInstance.connect()
             }
