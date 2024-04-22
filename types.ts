@@ -10,6 +10,7 @@ export interface NodeResqueJob {
     job: BaseJob
     plugins: typeof Plugin[],
     pluginOptions: Record<string, any>
+    args?: any[]
 }
 export interface JobSchedule {
     interval?: string | number
@@ -22,6 +23,8 @@ export interface ResqueFailure {
     job: NodeResqueJob
     failure: Error
     duration: number
+    args: any[]
+    pluginOptions?: Record<string, any>
 }
 declare module '@adonisjs/core/types' {
     interface EventsList {
