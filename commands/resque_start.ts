@@ -3,7 +3,7 @@ import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { createWorker, createMultiWorker, isMultiWorkerEnabled } from 'adonis-resque/services/main'
 import { importAllJobs } from '../jobs.js'
 import { cancelSchedules, createScheduler, Interval, startJobSchedules } from '../scheduler.js'
-import { MultiWorker, Scheduler, Worker } from 'node-resque'
+import { MultiWorker, ParsedJob, Scheduler, Worker } from 'node-resque'
 import { getConfig } from '../index.js'
 
 export default class ResqueStart extends BaseCommand {
@@ -48,6 +48,7 @@ export default class ResqueStart extends BaseCommand {
     async run() {
         const pid = process.pid
         const jobs = await importAllJobs()
+        const emitter = await this.app.container.make('emitter')
 
         if (this.worker) {
             const queueNames =
@@ -57,10 +58,27 @@ export default class ResqueStart extends BaseCommand {
                     .filter((value) => value !== '')
             const isMultiWorker = this.isMulti ?? isMultiWorkerEnabled()
             if (isMultiWorker) {
-                this.workerInstance = createMultiWorker(jobs, queueNames)
+                this.workerInstance = createMultiWorker(jobs, queueNames) as MultiWorker
                 this.logger.info(`Resque multiWorker:${pid} started.`)
+                this.workerInstance.on('failure', (workerId: number, queue: string, job: ParsedJob, failure: Error, duration: number) => {
+                    emitter.emit('resque:failure', {
+                        workerId,
+                        queue,
+                        job: jobs[job.class],
+                        failure,
+                        duration
+                    })
+                })
             } else {
                 this.workerInstance = createWorker(jobs, queueNames)
+                this.workerInstance.on('failure', (queue: string, job: ParsedJob, failure: Error, duration: number) => {
+                    emitter.emit('resque:failure', {
+                        queue,
+                        job: jobs[job.class],
+                        failure,
+                        duration
+                    })
+                })
                 await this.workerInstance.connect()
             }
             await this.workerInstance.start()
@@ -71,7 +89,6 @@ export default class ResqueStart extends BaseCommand {
             this.schedulerInstance = createScheduler()
             await this.schedulerInstance.connect()
             await this.schedulerInstance.start()
-            const jobs = await importAllJobs()
             this.intervals = await startJobSchedules(this.schedulerInstance, jobs)
             this.logger.info(`Scheduler:${pid} started`)
         }

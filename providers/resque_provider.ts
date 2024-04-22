@@ -16,12 +16,16 @@ export default class ResqueProvider {
     constructor(protected app: ApplicationService) {
     }
 
-    register() {
+    async register() {
         this.app.container.singleton('queue', async () => {
             const jobs = await importAllJobs()
             const queue = createQueue(jobs)
             await queue.connect()
             return queue
+        })
+        const emitter = await this.app.container.make('emitter')
+        emitter.on('resque:failure', async failure => {
+            return failure.job.job.onFailure(failure)
         })
     }
 

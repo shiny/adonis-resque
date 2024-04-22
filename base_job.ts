@@ -1,5 +1,5 @@
 import app from "@adonisjs/core/services/app"
-import { ResqueConfig } from "./types.js"
+import { ResqueConfig, ResqueFailure } from "./types.js"
 import { Logger, LoggerManager } from "@adonisjs/core/logger"
 import { LoggerConfig, LoggerManagerConfig } from "@adonisjs/core/types/logger"
 import { Plugin } from "node-resque"
@@ -90,6 +90,7 @@ export default class BaseJob {
         this.logger.error((error as Error).message)
         throw error
     }
+    onFailure(_failure: ResqueFailure): void | Promise<void> {}
     private async execute() {
         const resqueConfig = app.config.get<ResqueConfig>('resque')
         const jobName = this.jobName ?? this.constructor.name

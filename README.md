@@ -28,6 +28,8 @@
   - [Plugin.retry](#pluginretry)
   - [Plugin.noop](#pluginnoop)
   - [Custom Your Own Plugin](#custom-your-own-plugin)
+- [Handle Failure Jobs](#handle-failure-jobs)
+- [Failure Event](#failure-event)
 - [Demonstration](#demonstration)
   - [Send Mail Job](#send-mail-job)
 - [Configuration](#configuration)
@@ -36,6 +38,8 @@
 - [Reference](#reference)
 - [Lisence](#lisence)
 
+<!-- /TOC -->
+<!-- /TOC -->
 <!-- /TOC -->
 
 <!-- /TOC -->
@@ -277,6 +281,49 @@ class ExampleJob extends BaseJob {
         MyPlugin.create({ foo: 'baz' })
     ]
 }
+```
+
+## Handle Failure Jobs
+
+You can handle failure jobs by defining a `onFailure` method to your job class.
+Once a job fails, before it is moved to the `failed` queue, this method will be called.
+
+```typescript
+import { BaseJob, type ResqueFailure } from 'adonis-resque'
+class Job extends BaseJob {
+      async onFailure(failure: ResqueFailure) {
+        console.log('resque job failured:', failure)
+    }
+}
+```
+
+The ResqueFailure interface is:
+
+```typescript
+export interface ResqueFailure {
+    // Only the failure emitted by MultiWorker has a workerId
+    workerId?: number
+    queue: string
+    job: NodeResqueJob
+    failure: Error
+    duration: number
+}
+```
+
+> [!TIPS]
+> If you are using `retry` plugin, the `onFailure` method will be called only if the job has exceeded the retry limit.
+
+## Failure Event
+
+Another way to handle failure jobs is to listen to the `resque:failure` event.
+
+go `start/events.ts` to handle.
+```typescript
+import emitter from '@adonisjs/core/services/emitter'
+
+emitter.on('resque:failure', (failure) => {
+    console.error('resque:failure', failure)
+})
 ```
 
 ## Demonstration

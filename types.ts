@@ -15,3 +15,17 @@ export interface JobSchedule {
     interval?: string | number
     cron?: string
 }
+
+export interface ResqueFailure {
+    workerId?: number
+    queue: string
+    job: NodeResqueJob
+    failure: Error
+    duration: number
+}
+declare module '@adonisjs/core/types' {
+    interface EventsList {
+        'resque:failure': ResqueFailure
+    }
+}
+  

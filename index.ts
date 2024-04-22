@@ -11,6 +11,7 @@ export { Plugin } from './plugin.js'
 export type { RetryOptions, JobLockOptions, NoopOptions, QueueLockOptions } from './plugin.js'
 import { joinToURL } from '@poppinss/utils'
 import { ResqueConfig } from './types.js'
+export * from './types.js'
 import app from '@adonisjs/core/services/app'
 
 export const stubsRoot = joinToURL(import.meta.url, 'stubs')
