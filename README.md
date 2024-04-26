@@ -310,7 +310,7 @@ export interface ResqueFailure {
 }
 ```
 
-> [!TIPS]
+> [!TIP]
 > If you are using `retry` plugin, the `onFailure` method will be called only if the job has exceeded the retry limit.
 
 ## Failure Event
