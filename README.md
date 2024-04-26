@@ -61,7 +61,7 @@ node ace add adonis-resque
 Jobs default place in folder `app/jobs`.
 You can import the job by sub-path.
 ```typescript
-import Example from #jobs/example
+import Example from '#jobs/example'
 ```
 
 > [!TIP]
