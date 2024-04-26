@@ -469,6 +469,19 @@ services:
     restart: unless-stopped
 ```
 
+if redis server has a password, you can add a entrypoint
+
+```yaml
+    entrypoint:
+      - resque-web
+      - -FL
+      - -r
+      # Change your redis password here,
+      # default redis user is default
+      - "redis://<redis-user>:<redis-password>@<host>:<port>"
+      - /config.ru
+```
+
 ![Web UI](https://i.imgur.com/nN2d9ak.png)
 
 ## Notice for the graceful exit
