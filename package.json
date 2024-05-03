@@ -1,6 +1,6 @@
 {
   "name": "adonis-resque",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "description": " Resque Queue for AdonisJS v6 ",
   "main": "build/index.js",
