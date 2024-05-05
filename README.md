@@ -1,4 +1,3 @@
-
 <div align="center">
   <img src="https://i.imgur.com/SWHLZNO.png" />
   <h3>Node Resque Queue for AdonisJS v6</h3>
@@ -613,6 +612,7 @@ if redis server has a password, you can add a entrypoint
 ```
 
 ![Web UI](https://i.imgur.com/nN2d9ak.png)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fshiny%2Fadonis-resque.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fshiny%2Fadonis-resque?ref=badge_shield)
 
 ## Notice for the graceful exit
 resque require the graceful exit, or schedulers would waiting for a leader election.
@@ -636,3 +636,7 @@ You can also check the redis key `resque:resque_scheduler_leader_lock`, which va
 
 ## Lisence
 the MIT
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fshiny%2Fadonis-resque.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fshiny%2Fadonis-resque?ref=badge_large)
