@@ -21,23 +21,38 @@
   - [Batch enqueue](#batch-enqueue)
   - [Delayed enqueue](#delayed-enqueue)
   - [Repeated Enqueue](#repeated-enqueue)
-- [Node-Resque Plugin](#node-resque-plugin)
+- [Handle Failure Jobs](#handle-failure-jobs)
+  - [Job.onFailure](#jobonfailure)
+  - [Failure Event](#failure-event)
+- [Demonstration](#demonstration)
+  - [Send Mail Job](#send-mail-job)
+- [Plugin](#plugin)
   - [Plugin.jobLock](#pluginjoblock)
   - [Plugin.queueLock](#pluginqueuelock)
   - [Plugin.delayQueueLock](#plugindelayqueuelock)
   - [Plugin.retry](#pluginretry)
   - [Plugin.noop](#pluginnoop)
   - [Custom Your Own Plugin](#custom-your-own-plugin)
-- [Handle Failure Jobs](#handle-failure-jobs)
-- [Failure Event](#failure-event)
-- [Demonstration](#demonstration)
-  - [Send Mail Job](#send-mail-job)
 - [Configuration](#configuration)
+- [Concepts \& Components](#concepts--components)
+  - [Queue](#queue)
+    - [Example: Getting a total count of pending jobs](#example-getting-a-total-count-of-pending-jobs)
+  - [Worker](#worker)
+    - [Multi Worker](#multi-worker)
+  - [Scheduler](#scheduler)
+- [Deployment](#deployment)
+  - [Development](#development)
+  - [Production](#production)
 - [Web UI](#web-ui)
 - [Notice for the graceful exit](#notice-for-the-graceful-exit)
 - [Reference](#reference)
 - [Lisence](#lisence)
 
+<!-- /TOC -->lisence)
+
+<!-- /TOC -->
+
+<!-- /TOC -->
 <!-- /TOC -->
 <!-- /TOC -->
 <!-- /TOC -->
@@ -148,13 +163,110 @@ export default class BasicExample extends BaseJob {
 }
 ```
 
-> [!TIP]
-> You can and should run multi process schedules.
-> Not all schedules will enquene the cron job,
-> only the leader do, even in the different machines.  
-> For more informations, see node-resque leader scheduler: https://github.com/actionhero/node-resque?tab=readme-ov-file#job-schedules
 
-## Node-Resque Plugin
+## Handle Failure Jobs
+
+### Job.onFailure
+
+You can handle failure jobs by defining a `onFailure` method to your job class.
+Once a job fails, before it is moved to the `failed` queue, this method will be called.
+
+```typescript
+import { BaseJob, type ResqueFailure } from 'adonis-resque'
+class Job extends BaseJob {
+      async onFailure(failure: ResqueFailure) {
+        console.log('resque job failured:', failure)
+    }
+}
+```
+
+The ResqueFailure interface is:
+
+```typescript
+export interface ResqueFailure {
+    // Only the failure emitted by MultiWorker has a workerId
+    workerId?: number
+    queue: string
+    job: NodeResqueJob
+    failure: Error
+    duration: number
+}
+```
+
+> [!TIP]
+> If you are using `retry` plugin, the `onFailure` method will be called only if the job has exceeded the retry limit.
+
+### Failure Event
+
+Another way to handle failure jobs is to listen to the `resque:failure` event.
+
+go `start/events.ts` to handle.
+```typescript
+import emitter from '@adonisjs/core/services/emitter'
+
+emitter.on('resque:failure', (failure) => {
+    console.error('resque:failure', failure)
+})
+```
+
+## Demonstration
+### Send Mail Job
+
+In Adonis Documentation, they use bullmq as mail queueing example.
+But if we wanna use `adonis-resque` for `mail.sendLater`, how to do?
+
+1. Create a Mail Job  
+Run `node ace make:job Mail` to create the mail job, then edit it in `app/jobs/mail.ts`
+
+```typescript
+import { BaseJob } from 'adonis-resque'
+import mail from '@adonisjs/mail/services/main'
+import { MessageBodyTemplates, NodeMailerMessage } from '@adonisjs/mail/types'
+
+interface Options {
+    mailMessage: {
+        message: NodeMailerMessage;
+        views: MessageBodyTemplates;
+    }
+    config: any
+}
+export default class Mail extends BaseJob {
+    async perform(option: Options) {
+        const { messageId } = await mail.use('smtp')
+            .sendCompiled(option.mailMessage, option.config)
+        this.logger.info(`Email sent, id is ${messageId}`)
+    }
+}
+```
+
+2. Custom `mail.setMessenger` in a service provider  
+You can add the below code snippet to a boot method of any service provider.
+
+```typescript
+const mail = await this.app.container.make('mail.manager')
+mail.setMessenger(() => {
+  return {
+    async queue(mailMessage, sendConfig) {
+      return Mail.enqueue({ mailMessage, config: sendConfig })
+    }
+  }
+})
+```
+
+3. `mail.sendLater` is available now! Try it: :shipit:
+```typescript
+await mail.sendLater((message) => {
+  message.to('your-address@example.com', 'Your Name')
+  .subject('Hello from adonis-resque')
+  .html(`<strong>Congratulations!</strong>`)
+})
+```
+
+> [!CAUTION]
+> You should insure `@adonisjs/mail` has a correct config, you'd better to test it first.
+
+
+## Plugin
 
 Adonis-resque encapsulated the default node-resque plugins in a smooth way, with the better typing support.
 
@@ -283,104 +395,6 @@ class ExampleJob extends BaseJob {
 }
 ```
 
-## Handle Failure Jobs
-
-You can handle failure jobs by defining a `onFailure` method to your job class.
-Once a job fails, before it is moved to the `failed` queue, this method will be called.
-
-```typescript
-import { BaseJob, type ResqueFailure } from 'adonis-resque'
-class Job extends BaseJob {
-      async onFailure(failure: ResqueFailure) {
-        console.log('resque job failured:', failure)
-    }
-}
-```
-
-The ResqueFailure interface is:
-
-```typescript
-export interface ResqueFailure {
-    // Only the failure emitted by MultiWorker has a workerId
-    workerId?: number
-    queue: string
-    job: NodeResqueJob
-    failure: Error
-    duration: number
-}
-```
-
-> [!TIP]
-> If you are using `retry` plugin, the `onFailure` method will be called only if the job has exceeded the retry limit.
-
-## Failure Event
-
-Another way to handle failure jobs is to listen to the `resque:failure` event.
-
-go `start/events.ts` to handle.
-```typescript
-import emitter from '@adonisjs/core/services/emitter'
-
-emitter.on('resque:failure', (failure) => {
-    console.error('resque:failure', failure)
-})
-```
-
-## Demonstration
-### Send Mail Job
-
-In Adonis Documentation, they use bullmq as mail queueing example.
-But if we wanna use `adonis-resque` for `mail.sendLater`, how to do?
-
-1. Create a Mail Job  
-Run `node ace make:job Mail` to create the mail job, then edit it in `app/jobs/mail.ts`
-
-```typescript
-import { BaseJob } from 'adonis-resque'
-import mail from '@adonisjs/mail/services/main'
-import { MessageBodyTemplates, NodeMailerMessage } from '@adonisjs/mail/types'
-
-interface Options {
-    mailMessage: {
-        message: NodeMailerMessage;
-        views: MessageBodyTemplates;
-    }
-    config: any
-}
-export default class Mail extends BaseJob {
-    async perform(option: Options) {
-        const { messageId } = await mail.use('smtp')
-            .sendCompiled(option.mailMessage, option.config)
-        this.logger.info(`Email sent, id is ${messageId}`)
-    }
-}
-```
-
-2. Custom `mail.setMessenger` in a service provider  
-You can add the below code snippet to a boot method of any service provider.
-
-```typescript
-const mail = await this.app.container.make('mail.manager')
-mail.setMessenger(() => {
-  return {
-    async queue(mailMessage, sendConfig) {
-      return Mail.enqueue({ mailMessage, config: sendConfig })
-    }
-  }
-})
-```
-
-3. `mail.sendLater` is available now! Try it: :shipit:
-```typescript
-await mail.sendLater((message) => {
-  message.to('your-address@example.com', 'Your Name')
-  .subject('Hello from adonis-resque')
-  .html(`<strong>Congratulations!</strong>`)
-})
-```
-
-> [!CAUTION]
-> You should insure `@adonisjs/mail` has a correct config, you'd better to test it first.
 
 ## Configuration
 
@@ -446,6 +460,122 @@ Here is an example of `config/resque.ts`
     verbose: true
 }
 ```
+
+## Concepts & Components
+### Queue
+
+Queue is a redis list under the hood, consumed(redis pop) in worker. 
+Each job has a queueName, defined in Job class, default is `default`.
+
+```typescript
+class Example extends BaseJob {
+  queueName = 'default'
+}
+```
+You can enqueue jobs into queue from anywhere, .e.g, from a Adonis web controller or from another Job class: `Example.enqueue(...)`.
+
+That means a redis push.
+
+For failed jobs, they have been move to queue `failed`.
+
+The `node-resque` queue object is exposed in a container: 
+ ```typescript
+ const queue = await app.container.make('queue')
+ ```
+
+You can interact with it, find API here: https://node-resque.actionherojs.com/classes/Queue.html.
+
+#### Example: Getting a total count of pending jobs
+
+```typescript
+const pendingJobsTotal = await queue.length(<YourQueueName>)
+```
+
+### Worker
+
+The jobs you created are pulling and executed by workers actually.
+It is a adonis ace command, long-running under the console environment.
+
+You can start a worker by command: 
+```bash
+node ace resque:start --worker
+```
+
+It has been executed by web server in default, so you don't need to run it.
+
+> [!IMPORTANT]
+> In the production environment, we don't recommend you to use the web server to run the worker.
+> Instead, you should run the worker in the separated process, or multiple server.
+>
+
+Every worker has its own workerName, which composed of `os.hostname() + ":" + process.pid + "+" + counter;`
+
+#### Multi Worker
+MultiWorker [comes from `node-resque`](https://github.com/actionhero/node-resque/tree/main?tab=readme-ov-file#multi-worker), is a pool manager for workers. It starts multiple workers in the same process, not in child process. Threfore, those workers have a same pid in their workerName.
+
+This is designed for I/O intensive jobs, not CPU.
+So don't get confused by the word `multi`. 
+
+> [!TIP]
+> If you'd like to handle CPU intensive jobs, you can start multipe processes(by running the ace command), even on multipe machines.
+
+Multi worker is enabled by `isMultiWorkerEnabled` in config by default. If you'd like start a single worker, you can set the config to false, or  use the flag `--is-multi` to control:
+
+```bash
+node ace resque:start --worker --is-multi=false
+```
+
+
+### Scheduler
+
+Scheduler is a kind of specialized internal worker. It is a coordinator of the jobs.
+
+the Utilities are:
+- Support croner & interval jobs
+- Process delayed job (`job.in`/`job.at`)
+- Checking stuck workers
+- General cluster cleanup
+- ...
+
+> [!TIP]
+> 
+> Scheduler could and should be run in many processes(machines), only one will be elected to be the `leader`, and actually do work; the others are backup.
+> For more informations, see node-resque leader scheduler: https://github.com/actionhero/node-resque?tab=readme-ov-file#job-schedules
+
+By default, scheduler starts with an worker together. You can modify `runScheduler` to `false` in config, to changing this behavior.
+
+To start a stand alone scheduler, you can run 
+```bash
+node ace resque:start --worker=false --schedule
+```
+
+## Deployment
+
+Resque is a distributed job queue system, it can be deloyed to separated processes or servers.
+
+### Development
+
+The scheduler and multiworker are started with web server together.
+You don't need to take any additional steps to make it work.
+
+### Production
+
+You should disable the config `runWorkerInWebEnv`, and run `node ace resque:start` command in separated processes.
+
+It is recommended to start mutiple schedules and workers.
+For I/O intensive jobs, you should start multiWorker with `--is-multi` on; for CPU intensive jobs, no benefits from that.
+
+Usually, we build a docker image for both web server and jobs, start worker and scheduler by setting the entrypoint.
+They could share the same other configures, like environment variables.
+
+docker-compose.yml
+```yaml
+    ...
+    entrypoint: ["node", "ace", "resque:start", "--worker", "--schedule"]
+```
+
+For people who don't use docker, you can also use `supervisord` or `pm2` to manage the processes.
+
 
 ## Web UI
 node-resque also compatible with some Resque Web UI, .e.g [resque-web](https://github.com/resque/resque-web)
