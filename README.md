@@ -634,7 +634,7 @@ if adonis dev server terminated but process still there, you can send SIGTERM si
 You can also check the redis key `resque:resque_scheduler_leader_lock`, which value is scheduler name contains pid of the leader process. it should be release once server terminated.
 
 ## Who's Using
-[Create an issue](https://github.com/shiny/u301/issues/new) to submit your project.
+[Create an issue](https://github.com/shiny/adonis-resque/issues/new) to submit your project.
 
 <div>
 <a href="https://u301.com/"><img src="https://u301.com/img/u301-logo.png" style="width:120px" /></a>
