@@ -71,12 +71,12 @@
 node ace add adonis-resque
 ```
 > [!IMPORTANT]
-> `adonis-redis` is required for resque redis connection.
+> `@adonisjs/redis` is required for resque redis connection.
 > 
 ## Folders
 
-Jobs default place in folder `app/jobs`.
-You can import the job by sub-path.
+Jobs are placed in folder `app/jobs` by default.
+You can import job through sub-path.
 ```typescript
 import Example from '#jobs/example'
 ```
@@ -121,7 +121,7 @@ await BasicExample.enqueue('Bob')
 Console would print `Hello Bob`.
 
 > [!WARNING]
-> Make sure your Job ClassName is unique in the queue. and argument of method perform would be jsonify to redis.
+> Make sure your Job ClassName is unique in the queue. and the arguments of it's method `perform` would be serialize to a json string to redis under the hood.
 
 ### Batch enqueue
 ```typescript
@@ -170,8 +170,8 @@ export default class BasicExample extends BaseJob {
 
 ### Job.onFailure
 
-You can handle failure jobs by defining a `onFailure` method to your job class.
-Once a job fails, before it is moved to the `failed` queue, this method will be called.
+You can handle failure jobs by defining a `onFailure` method.
+Once a job fails, it would be called before moving to the `failed` queue.
 
 ```typescript
 import { BaseJob, type ResqueFailure } from 'adonis-resque'
@@ -182,7 +182,7 @@ class Job extends BaseJob {
 }
 ```
 
-The ResqueFailure interface is:
+The definition of interface ResqueFailure
 
 ```typescript
 export interface ResqueFailure {
@@ -214,8 +214,8 @@ emitter.on('resque:failure', (failure) => {
 ## Demonstration
 ### Send Mail Job
 
-In Adonis Documentation, they use bullmq as mail queueing example.
-But if we wanna use `adonis-resque` for `mail.sendLater`, how to do?
+In the Adonis Documentation, they use bullmq as mail queueing example.
+But if we want to use `adonis-resque` for `mail.sendLater`, how to do?
 
 1. Create a Mail Job  
 Run `node ace make:job Mail` to create the mail job, then edit it in `app/jobs/mail.ts`
@@ -255,7 +255,7 @@ mail.setMessenger(() => {
 })
 ```
 
-3. `mail.sendLater` is available now! Try it: :shipit:
+3. `mail.sendLater` is available now! Let's have a try. :shipit:
 ```typescript
 await mail.sendLater((message) => {
   message.to('your-address@example.com', 'Your Name')
@@ -385,7 +385,8 @@ export default class MyPlugin extends BasePlugin {
 }
 ```
 
-Now you can use it in your job class:
+Applying it in your job class.
+
 ```typescript
 import { BaseJob } from "adonis-resque"
 // import MyPlugin from './my-plugin'
@@ -616,7 +617,7 @@ if redis server has a password, you can add a entrypoint
 
 ![Web UI](https://i.imgur.com/nN2d9ak.png)
 
-## Notice for the graceful exit
+## Notice 1: for the graceful exit
 resque require the graceful exit, or schedulers would waiting for a leader election.
 
 node-resque may not exit in dev environment if you exit by `ctrl+c`.
@@ -632,6 +633,11 @@ app.listen('SIGINT', () => app.terminate())
 if adonis dev server terminated but process still there, you can send SIGTERM signal to all node process(on macOS) `killall node`
 
 You can also check the redis key `resque:resque_scheduler_leader_lock`, which value is scheduler name contains pid of the leader process. it should be release once server terminated.
+
+## Notice 2: Job does not `@inject`able
+Since our job is a [Thenable class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#thenables), that made it not able be inject([related issue](https://github.com/adonisjs/fold/issues/63)), which means `@inject` decorator won't work.
+
+You can use `app.container.make()` in job instead.
 
 ## Who's Using
 [Create an issue](https://github.com/shiny/adonis-resque/issues/new) to submit your project.
