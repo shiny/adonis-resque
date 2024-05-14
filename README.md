@@ -44,12 +44,14 @@
   - [Development](#development)
   - [Production](#production)
 - [Web UI](#web-ui)
-- [Notice for the graceful exit](#notice-for-the-graceful-exit)
+- [Notice 1: for the graceful exit](#notice-1-for-the-graceful-exit)
+- [Notice 2: Job does not `@inject`able](#notice-2-job-does-not-injectable)
 - [Who's Using](#whos-using)
 - [Contributors](#contributors)
 - [Reference](#reference)
-- [Lisence](#lisence)
+- [License](#license)
 
+<!-- /TOC -->
 <!-- /TOC -->
 
 <!-- /TOC -->
@@ -654,7 +656,7 @@ This project is contributed by u301 team for giving back to the AdonisJS communi
 
 - [node-resque](https://github.com/actionhero/node-resque)
 
-## Lisence
+## License
 MIT
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fshiny%2Fadonis-resque.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fshiny%2Fadonis-resque?ref=badge_large&issueType=license)
