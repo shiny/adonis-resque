@@ -330,7 +330,8 @@ export interface QueueLockOptions {
 
 Same as queueLock, but it is for the delay queue.
 
-> [!IMPORTANT] How "Prevented Before Enqueue" Works?
+> [!IMPORTANT]
+> **How "Prevented Before Enqueue" Works?**  
 > The `delayQueueLock` only prevents immediate enqueue operations; it doesn't prevent delayed enqueue operations, such as those using `in` or `at`.
 > In `node-resque`, only non-delayed enqueue operations trigger the `beforeEnqueue` hook. If you use `in` or `at`, the hook is not triggered. 
 > [Here is source code](https://github.com/actionhero/node-resque/blob/a7eb5742df427aaf338efcc40579534ac458f57b/src/core/queue.ts#L86)
