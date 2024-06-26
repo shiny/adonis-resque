@@ -330,6 +330,30 @@ export interface QueueLockOptions {
 
 Same as queueLock, but it is for the delay queue.
 
+> [!IMPORTANT] How "Prevented Before Enqueue" Works?
+> The `delayQueueLock` only prevents immediate enqueue operations; it doesn't prevent delayed enqueue operations, such as those using `in` or `at`.
+> In `node-resque`, only non-delayed enqueue operations trigger the `beforeEnqueue` hook. If you use `in` or `at`, the hook is not triggered. 
+> [Here is source code](https://github.com/actionhero/node-resque/blob/a7eb5742df427aaf338efcc40579534ac458f57b/src/core/queue.ts#L86)
+> 
+> Therefore, in the following code, the second operation won't be enqueued:
+> ```typescript
+> 
+> export default class ExampleJob extends BaseJob {
+>     plugins = [
+>         Plugin.delayQueueLock()
+>     ]
+>     async perform() {}
+> }
+> await ExampleJob.enqueue().in(1000)
+> // won't enqueue to queue
+> await ExampleJob.enqueue()
+> ```
+> However, in the following code, the job will perform twice, no matter if the `delayQueueLock` plugin is enabled or not:
+> ```typescript
+> await ExampleJob.enqueue().in(1000)
+> await ExampleJob.enqueue().in(1500)
+> ```
+
 
 ### Plugin.retry
 
