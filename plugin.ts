@@ -63,8 +63,8 @@ export class Plugin {
      * do not enqueue it again
      * @docs Source code: https://github.com/actionhero/node-resque/blob/main/src/plugins/DelayQueueLock.ts
      */
-    static delayQueueLock(): [typeof Plugins.DelayQueueLock]  {
-        return [Plugins.DelayQueueLock]
+    static delayQueueLock(): [typeof Plugins.DelayQueueLock, {}]  {
+        return [Plugins.DelayQueueLock, {}]
     }
     /**
      * Log the error and do not throw it
