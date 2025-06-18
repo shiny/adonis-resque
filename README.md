@@ -77,7 +77,7 @@
 ## Installation
 
 ```bash
-npm i adonis-resque@2.0.0-alpha.0
+npm i adonis-resque
 node ace configure adonis-resque
 ```
 > [!IMPORTANT]
