@@ -46,6 +46,7 @@ const resqueConfig = defineConfig({
      */
     logger: null,
     verbose: true,
+    jobsGlob: "**/*{.ts,.js}"
 })
 
 export default resqueConfig
