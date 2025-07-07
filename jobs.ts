@@ -1,25 +1,17 @@
 import app from "@adonisjs/core/services/app"
-import * as fg from 'fast-glob'
 import Job from "./base_job.js"
 import { NodeResqueJob } from './types.js'
 import { getConfig } from "./index.js"
-import { pathToFileURL } from "url"
+import { fsImportAll } from "@poppinss/utils"
 
 export async function importAllJobs() {
-    const glob = getConfig('jobsGlob') || '**/*_job{.ts,.js}'
-    const files = await fg(glob, {
-        cwd: app.rootPath(),
-        absolute: true
+    const glob = getConfig('jobsPath') || 'app/jobs';
+    const jobs: Record<string, unknown> = await fsImportAll(app.makePath(glob), {
+        filter (filePath): boolean {
+            return filePath.endsWith('job.ts') || filePath.endsWith('job.js')
+        },
+        ignoreMissingRoot: true
     })
-    const jobs: Record<string, unknown> = {}
-    for (const file of files) {
-        const mod = await import(pathToFileURL(file).href);
-        if (mod.default) {
-            jobs[file] = mod.default
-        } else {
-            Object.assign(jobs, mod);
-        }
-    }
     /**
      * Duck typing check
      * @param job 
