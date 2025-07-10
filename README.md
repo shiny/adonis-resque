@@ -267,7 +267,7 @@ await mail.sendLater((message) => {
 ```
 
 > [!CAUTION]
-> You should insure `@adonisjs/mail` has a correct config, you'd better to test it first.
+> You should ensure `@adonisjs/mail` has a correct config, you'd better to test it first.
 
 
 ## Plugin
