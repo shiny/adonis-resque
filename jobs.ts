@@ -5,10 +5,10 @@ import { getConfig } from "./index.js"
 import { fsImportAll } from "@poppinss/utils"
 
 export async function importAllJobs() {
-    const glob = getConfig('jobsPath') || 'app/jobs';
-    const jobs: Record<string, unknown> = await fsImportAll(app.makePath(glob), {
+    const path = getConfig('jobsPath') || 'app/jobs';
+    const jobs: Record<string, unknown> = await fsImportAll(app.makePath(path), {
         filter (filePath): boolean {
-            return filePath.endsWith('job.ts') || filePath.endsWith('job.js')
+            return filePath.endsWith('.ts') || filePath.endsWith('.js')
         },
         ignoreMissingRoot: true
     })
