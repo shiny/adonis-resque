@@ -11,7 +11,8 @@ export function defineConfig<Connections extends RedisConnections>(config: {
     queueNameForJobs: string
     queueNameForWorkers: string
     logger: string | null
-    verbose: boolean
+    verbose: boolean,
+    jobsPath: string,
 }) {
     return config
 }

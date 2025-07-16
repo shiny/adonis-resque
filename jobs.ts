@@ -1,10 +1,15 @@
 import app from "@adonisjs/core/services/app"
-import { fsImportAll } from "@poppinss/utils"
 import Job from "./base_job.js"
 import { NodeResqueJob } from './types.js'
+import { getConfig } from "./index.js"
+import { fsImportAll } from "@poppinss/utils"
 
 export async function importAllJobs() {
-    const jobs: Record<string, unknown> = await fsImportAll(app.makePath('app/jobs'), {
+    const path = getConfig('jobsPath') || 'app/jobs';
+    const jobs: Record<string, unknown> = await fsImportAll(app.makePath(path), {
+        filter (filePath): boolean {
+            return filePath.endsWith('.ts') || filePath.endsWith('.js')
+        },
         ignoreMissingRoot: true
     })
     /**
@@ -16,7 +21,7 @@ export async function importAllJobs() {
         if (!job) {
             return false
         }
-        if (typeof job?.prototype?.perform !=='function') {
+        if (typeof job?.prototype?.perform !== 'function') {
             return false
         }
         if (typeof job?.prototype?.enqueue !== 'function') {
