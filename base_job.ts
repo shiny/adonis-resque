@@ -12,7 +12,7 @@ export default class BaseJob {
     delayMs: number = 0
     runAtMs?: number
     /**
-     * the default JobName is this class name  
+     * the default JobName is this class name
      * it **MUST be a unique name**
      */
     jobName?: string
@@ -26,6 +26,7 @@ export default class BaseJob {
     hasEnqueued: boolean = false
     hasEnqueuedAll: boolean = false
     app = app
+    suppressDuplicateTaskError: boolean = false
 
     constructor(..._args: any[]) {
 
@@ -59,6 +60,9 @@ export default class BaseJob {
         if (resqueConfig.logger) {
             logger.use(resqueConfig.logger)
         }
+        if (resqueConfig.suppressDuplicateTaskError) {
+            this.suppressDuplicateTaskError = resqueConfig.suppressDuplicateTaskError
+        }
         if (this.hasEnqueued) {
             const getTips = () => {
                 if (!resqueConfig.verbose) {
@@ -78,9 +82,9 @@ export default class BaseJob {
                 logger.info(tips)
             }
             if (this.delayMs) {
-                return queue.enqueueIn(this.delayMs, queueName, jobName, this.args)
+                return queue.enqueueIn(this.delayMs, queueName, jobName, this.args, this.suppressDuplicateTaskError)
             } else if (this.runAtMs) {
-                return queue.enqueueAt(this.runAtMs, queueName, jobName, this.args)
+                return queue.enqueueAt(this.runAtMs, queueName, jobName, this.args, this.suppressDuplicateTaskError)
             } else {
                 return queue.enqueue(queueName, jobName, this.args)
             }
@@ -115,11 +119,11 @@ export default class BaseJob {
     }
 
     /**
-     * 
-     * @param this 
+     *
+     * @param this
      * @param delayMs In ms, the number of ms to delay before this job is able to start being worked on
      * @param args
-     * @returns 
+     * @returns
      */
     static async enqueueIn<T extends typeof BaseJob>(this: T, delayMs: number, ...args: Parameters<InstanceType<T>['perform']>) {
         const job = await app.container.make(this)

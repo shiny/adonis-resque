@@ -12,6 +12,7 @@ export function defineConfig<Connections extends RedisConnections>(config: {
     queueNameForWorkers: string
     logger: string | null
     verbose: boolean
+    suppressDuplicateTaskError?: boolean
 }) {
     return config
 }
