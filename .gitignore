@@ -129,4 +129,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+#IntelliJ IDE project settings
+.idea/
+
 build/

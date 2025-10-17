@@ -523,7 +523,10 @@ Here is an example of `config/resque.ts`
      */
     logger: null,
     // verbose mode for debugging
-    verbose: true
+    verbose: true,
+
+    // prevent Resque from throwing an error when a scheduled job is already enqueued at the given time
+    suppressDuplicateTaskError: true,
 }
 ```
 
