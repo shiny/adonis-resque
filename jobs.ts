@@ -2,11 +2,20 @@ import app from "@adonisjs/core/services/app"
 import { fsImportAll } from "@poppinss/utils"
 import Job from "./base_job.js"
 import { NodeResqueJob } from './types.js'
+import { getConfig } from './index.js'
+
+export function resolveJobPaths(configured?: string | string[]): string[] {
+    if (!configured) return ['app/jobs']
+    return Array.isArray(configured) ? configured : [configured]
+}
 
 export async function importAllJobs() {
-    const jobs: Record<string, unknown> = await fsImportAll(app.makePath('app/jobs'), {
-        ignoreMissingRoot: true
-    })
+    const paths = resolveJobPaths(getConfig('jobsPath'))
+
+    const jobsArrays = await Promise.all(
+        paths.map((p) => fsImportAll(app.makePath(p), { ignoreMissingRoot: true }))
+    )
+    const jobs: Record<string, unknown> = Object.assign({}, ...jobsArrays)
     /**
      * Duck typing check
      * @param job 
