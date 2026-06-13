@@ -46,6 +46,13 @@ const resqueConfig = defineConfig({
      */
     logger: null,
     verbose: true,
+    /**
+     * path(s) to scan for job files, relative to the app root
+     * accepts a single path or an array of paths for modular architectures
+     * e.g. ['app/contacts/jobs', 'app/reminders/jobs']
+     * defaults to 'app/jobs' when omitted
+     */
+    // jobsPath: 'app/jobs',
 })
 
 export default resqueConfig

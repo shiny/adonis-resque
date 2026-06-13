@@ -4,5 +4,10 @@
       "rootDir": "./",
       "outDir": "./build",
       "resolveJsonModule": false
+    },
+    "ts-node": {
+      "swc": false,
+      "esm": true,
+      "transpileOnly": true
     }
 }
